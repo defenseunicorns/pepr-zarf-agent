@@ -1,0 +1,31 @@
+{
+  "name": "pepr-zarf-agent",
+  "version": "0.0.1",
+  "description": "",
+  "keywords": [
+    "pepr",
+    "k8s",
+    "policy-engine",
+    "pepr-module",
+    "security"
+  ],
+  "pepr": {
+    "name": "pepr-zarf-agent",
+    "uuid": "f64b6d4f-93ec-54d3-99a4-e70c751da008",
+    "onError": "audit",
+    "alwaysIgnore": {
+      "namespaces": [],
+      "labels": []
+    }
+  },
+  "scripts": {
+    "k3d-setup": "k3d cluster delete pepr-dev && k3d cluster create pepr-dev --k3s-arg '--debug@server:0'",
+    "start": "pepr dev"
+  },
+  "dependencies": {
+    "pepr": "0.7.0"
+  },
+  "devDependencies": {
+    "typescript": "5.0.4"
+  }
+}
