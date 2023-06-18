@@ -1,3 +1,6 @@
+import {
+  Log
+} from "pepr";
 import { K8sAPI } from "../kubernetes-api";
 import { V1Secret } from "@kubernetes/client-node";
 
@@ -10,6 +13,10 @@ export class InitSecrets {
   privateRegistrySecretName = "private-registry";
   privateRegistrySecretNamespace = "zarf";
   privateRegistrySecretKeys = [".dockerconfigjson"];
+
+  // TODO - type these
+  zarfStateSecret: any;
+  privateRegistrySecret: any;
 
   // authServiceNamespace = "authservice";
   // authServiceSecretName = "authservice";
@@ -29,35 +36,31 @@ export class InitSecrets {
     return Buffer.from(secret.data[key], "base64").toString("utf-8");
   }
 
-  async getZarfStateSecret(): Promise<ZarfStateSecret> {
+  // TODO type this
+  async getZarfStateSecret(): Promise<any> {
     const secretData = await this.k8sApi.getSecretValues(
       this.zarfStateSecretName,
       this.zarfStateSecretNamespace,
       this.zarfStateSecretKeys
     );
+      Log.info("Zarf state secret: ", JSON.stringify(secretData));
+    this.zarfStateSecret = secretData;
 
-    return new this.zarfStateSecretKeys()
+    return secretData;
   }
 
-  async getZarfPrivateRegistrySecret(): Promise<PrivateRegistrySecret> {
+  async getZarfPrivateRegistrySecret(): Promise<any> {
     const secretData = await this.k8sApi.getSecretValues(
       this.privateRegistrySecretName,
       this.privateRegistrySecretNamespace,
       this.privateRegistrySecretKeys
     );
+    Log.info("Private registry secret: ", JSON.stringify(secretData,undefined,2));
+    this.privateRegistrySecret = secretData;
 
-    return new this.privateRegistrySecret()
+    return secretData;
   }
-  async getAuthServiceSecret(): Promise<AuthserviceConfig> {
-    const secretData = await this.k8sApi.getSecretValues(
-      this.authServiceSecretName,
-      this.authServiceNamespace,
-      [this.authServiceConfigFileName]
-    );
-    return new AuthserviceConfig(
-      JSON.parse(secretData[this.authServiceConfigFileName])
-    );
-  }
+
 
   // async buildAuthserviceSecret() {
   //   const missionSecrets = await this.k8sApi.getSecretsByPattern(
@@ -90,72 +93,72 @@ export class InitSecrets {
   // }
 }
 
-export class PrivateRegistrySecret {
-  chains: FilterChain[];
-  listen_address: string;
-  listen_port: number;
-  log_level: string;
-  threads: number;
-  trigger_rules?: TriggerRule[];
-  default_oidc_config?: OIDCConfig;
-  allow_unmatched_requests?: boolean;
+// export class PrivateRegistrySecret {
+//   chains: FilterChain[];
+//   listen_address: string;
+//   listen_port: number;
+//   log_level: string;
+//   threads: number;
+//   trigger_rules?: TriggerRule[];
+//   default_oidc_config?: OIDCConfig;
+//   allow_unmatched_requests?: boolean;
 
-  constructor(json: any) {
-    this.chains = json.chains.map((chain: any) => new FilterChain(chain));
-    this.listen_address = json.listen_address;
-    this.listen_port = json.listen_port;
-    this.log_level = json.log_level;
-    this.threads = json.threads;
+//   constructor(json: any) {
+//     this.chains = json.chains.map((chain: any) => new FilterChain(chain));
+//     this.listen_address = json.listen_address;
+//     this.listen_port = json.listen_port;
+//     this.log_level = json.log_level;
+//     this.threads = json.threads;
 
-    if (json.trigger_rules !== undefined) {
-      this.trigger_rules = json.trigger_rules.map(
-        (rule: any) => new TriggerRule(rule)
-      );
-    }
+//     if (json.trigger_rules !== undefined) {
+//       this.trigger_rules = json.trigger_rules.map(
+//         (rule: any) => new TriggerRule(rule)
+//       );
+//     }
 
-    if (json.default_oidc_config !== undefined) {
-      this.default_oidc_config = new OIDCConfig(json.default_oidc_config);
-    }
+//     if (json.default_oidc_config !== undefined) {
+//       this.default_oidc_config = new OIDCConfig(json.default_oidc_config);
+//     }
 
-    if (json.allow_unmatched_requests !== undefined) {
-      this.allow_unmatched_requests = json.allow_unmatched_requests;
-    }
-  }
+//     if (json.allow_unmatched_requests !== undefined) {
+//       this.allow_unmatched_requests = json.allow_unmatched_requests;
+//     }
+//   }
 
-  static createSingleChain(input: ChainInput): FilterChain {
-    const oidcConfig = new OIDCConfig({
-      callback_uri: input.redirect_uri,
-      client_id: input.id,
-      client_secret: input.secret,
-      cookie_name_prefix: input.name,
-    });
+//   static createSingleChain(input: ChainInput): FilterChain {
+//     const oidcConfig = new OIDCConfig({
+//       callback_uri: input.redirect_uri,
+//       client_id: input.id,
+//       client_secret: input.secret,
+//       cookie_name_prefix: input.name,
+//     });
 
-    const filter = new Filter({
-      oidc_override: oidcConfig,
-    });
+//     const filter = new Filter({
+//       oidc_override: oidcConfig,
+//     });
 
-    const matchMe = new Match({
-      header: ":authority",
-      equality: input.hostname,
-    });
+//     const matchMe = new Match({
+//       header: ":authority",
+//       equality: input.hostname,
+//     });
 
-    return new FilterChain({
-      name: input.name,
-      match: matchMe,
-      filters: [filter],
-    });
-  }
+//     return new FilterChain({
+//       name: input.name,
+//       match: matchMe,
+//       filters: [filter],
+//     });
+//   }
 
-  toObject(): Record<string, any> {
-    return {
-      chains: this.chains.map(chain => chain.toObject()),
-      listen_address: this.listen_address,
-      listen_port: this.listen_port,
-      log_level: this.log_level,
-      threads: this.threads,
-      trigger_rules: this.trigger_rules.map(rule => rule.toObject()),
-      default_oidc_config: this.default_oidc_config?.toObject(),
-      allow_unmatched_requests: this.allow_unmatched_requests,
-    };
-  }
-}
+//   toObject(): Record<string, any> {
+//     return {
+//       chains: this.chains.map(chain => chain.toObject()),
+//       listen_address: this.listen_address,
+//       listen_port: this.listen_port,
+//       log_level: this.log_level,
+//       threads: this.threads,
+//       trigger_rules: this.trigger_rules.map(rule => rule.toObject()),
+//       default_oidc_config: this.default_oidc_config?.toObject(),
+//       allow_unmatched_requests: this.allow_unmatched_requests,
+//     };
+//   }
+// }

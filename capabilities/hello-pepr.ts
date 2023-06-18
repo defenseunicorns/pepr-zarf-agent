@@ -21,25 +21,7 @@ export const HelloPepr = new Capability({
 // Use the 'When' function to create a new Capability Action
 const { When } = HelloPepr;
 
-// Save zarf-secret and private-registry secrets to state
 
-
-
-/**
- * ---------------------------------------------------------------------------------------------------
- *                                   CAPABILITY ACTION (Pod)                                   *
- * ---------------------------------------------------------------------------------------------------
- *
- * This Capability Action fetches the `zarf-state` and `private-registry` secrets when
- * a pod is created, saves them to state, and deploys the `private-registry` secret to the
- * pod namespace.
- */
-
-When(a.Pod)
-  .IsCreated()
-  .Then(async request => {
-    // fetch secrets from zarf ns 
-  });
 /**
  * ---------------------------------------------------------------------------------------------------
  *                                   CAPABILITY ACTION (Namespace)                                   *
