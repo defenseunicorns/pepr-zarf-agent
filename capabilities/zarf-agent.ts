@@ -25,7 +25,7 @@ export const ZarfAgent = new Capability({
 const { When } = ZarfAgent;
 
 // Save zarf-secret and private-registry secrets to state
-let _initSecrets: any;
+let _initSecrets = new InitSecrets(new K8sAPI());
 
 
 /**
@@ -47,10 +47,8 @@ When(a.Pod)
   .IsCreated()
   .Then(async request => {
     Log.SetLogLevel("debug");
-    const k8sApi = new K8sAPI();
     try {
-      // initialize k8s
-      _initSecrets = new InitSecrets(k8sApi);
+
       // _initSecrets = new InitSecrets(k8sApi);
       //await _initSecrets.getZarfStateSecret();
       await _initSecrets.getZarfPrivateRegistrySecret()
