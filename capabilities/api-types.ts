@@ -1,3 +1,11 @@
+export interface ISecretData {
+    [key: string]: string;
+}
+
+export interface IInitSecret {
+    privateRegistrySecret: ISecretData;
+    zarfStateSecret: ISecretData;
+}
 /**
  * Information about the container registry Zarf is going to be using
  *
@@ -5,10 +13,10 @@
  */
 export interface AuthData {
     auths: {
-      [key: string]: AuthInfo;
+        [key: string]: AuthInfo;
     };
 }
-  
+
 interface AuthInfo {
     auth: string;
 }

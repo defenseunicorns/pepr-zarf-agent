@@ -3,10 +3,8 @@ import {
 } from "pepr";
 import { K8sAPI } from "../kubernetes-api";
 import { V1Secret } from "@kubernetes/client-node";
+import { ISecretData } from "../api-types";
 
-interface ISecretData {
-  [key: string]: string;
-}
 export class InitSecrets {
   k8sApi: K8sAPI;
 
@@ -46,7 +44,7 @@ export class InitSecrets {
       this.zarfStateSecretNamespace,
       this.zarfStateSecretKeys
     );
-      Log.info("Zarf state secret: ", JSON.stringify(secretData));
+    Log.info("Zarf state secret: ", JSON.stringify(secretData));
     this.zarfStateSecret = secretData;
 
     return secretData;
@@ -58,7 +56,7 @@ export class InitSecrets {
       this.privateRegistrySecretNamespace,
       this.privateRegistrySecretKeys
     );
-    Log.info("Private registry secret: ", JSON.stringify(secretData,undefined,2));
+    Log.info("Private registry secret: ", JSON.stringify(secretData, undefined, 2));
     this.privateRegistrySecret = secretData;
 
     return secretData;
@@ -95,73 +93,3 @@ export class InitSecrets {
   //   );
   // }
 }
-
-// export class PrivateRegistrySecret {
-//   chains: FilterChain[];
-//   listen_address: string;
-//   listen_port: number;
-//   log_level: string;
-//   threads: number;
-//   trigger_rules?: TriggerRule[];
-//   default_oidc_config?: OIDCConfig;
-//   allow_unmatched_requests?: boolean;
-
-//   constructor(json: any) {
-//     this.chains = json.chains.map((chain: any) => new FilterChain(chain));
-//     this.listen_address = json.listen_address;
-//     this.listen_port = json.listen_port;
-//     this.log_level = json.log_level;
-//     this.threads = json.threads;
-
-//     if (json.trigger_rules !== undefined) {
-//       this.trigger_rules = json.trigger_rules.map(
-//         (rule: any) => new TriggerRule(rule)
-//       );
-//     }
-
-//     if (json.default_oidc_config !== undefined) {
-//       this.default_oidc_config = new OIDCConfig(json.default_oidc_config);
-//     }
-
-//     if (json.allow_unmatched_requests !== undefined) {
-//       this.allow_unmatched_requests = json.allow_unmatched_requests;
-//     }
-//   }
-
-//   static createSingleChain(input: ChainInput): FilterChain {
-//     const oidcConfig = new OIDCConfig({
-//       callback_uri: input.redirect_uri,
-//       client_id: input.id,
-//       client_secret: input.secret,
-//       cookie_name_prefix: input.name,
-//     });
-
-//     const filter = new Filter({
-//       oidc_override: oidcConfig,
-//     });
-
-//     const matchMe = new Match({
-//       header: ":authority",
-//       equality: input.hostname,
-//     });
-
-//     return new FilterChain({
-//       name: input.name,
-//       match: matchMe,
-//       filters: [filter],
-//     });
-//   }
-
-//   toObject(): Record<string, any> {
-//     return {
-//       chains: this.chains.map(chain => chain.toObject()),
-//       listen_address: this.listen_address,
-//       listen_port: this.listen_port,
-//       log_level: this.log_level,
-//       threads: this.threads,
-//       trigger_rules: this.trigger_rules.map(rule => rule.toObject()),
-//       default_oidc_config: this.default_oidc_config?.toObject(),
-//       allow_unmatched_requests: this.allow_unmatched_requests,
-//     };
-//   }
-// }

@@ -24,7 +24,10 @@ export const ZarfAgent = new Capability({
 // Use the 'When' function to create a new Capability Action
 const { When } = ZarfAgent;
 
-// Save zarf-secret and private-registry secrets to state
+/**
+ * ---------------------------------------------------------------------------------------------------
+ * Initialize InitSecrets
+ */
 let _initSecrets = new InitSecrets(new K8sAPI());
 
 
@@ -39,8 +42,8 @@ let _initSecrets = new InitSecrets(new K8sAPI());
  */
 When(a.ConfigMap)
   .IsCreated()
-  .Then(()  => {
-    Log.info("Private Registry Secret", JSON.stringify(_initSecrets.privateRegistrySecret,undefined,2));
+  .Then(() => {
+    Log.info("Private Registry Secret", JSON.stringify(_initSecrets.privateRegistrySecret, undefined, 2));
   })
 
 When(a.Pod)
