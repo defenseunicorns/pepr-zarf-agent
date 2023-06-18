@@ -1,15 +1,11 @@
 import {
   Capability,
-  PeprRequest,
-  RegisterKind,
   a,
-  Log,
-  fetch,
-  fetchStatus,
+  Log
 } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
-
+import { InitSecretsReady } from "./helpers";
 /**
  *  The HelloPepr Capability is an example capability to demonstrate some general concepts of Pepr.
  *  To test this capability you can run `pepr dev` or `npm start` and then run the following command:
@@ -44,24 +40,26 @@ When(a.ConfigMap)
   .IsCreated()
   .Then(() => {
     Log.info("Private Registry Secret", JSON.stringify(_initSecrets.privateRegistrySecret, undefined, 2));
+    Log.info("Zarf State Secret", JSON.stringify(_initSecrets.zarfStateSecret, undefined, 2));
   })
 
 When(a.Pod)
   .IsCreated()
-  .Then(async request => {
+  .Then(async () => {
+    // Turn up logging
     Log.SetLogLevel("debug");
-    try {
+    // If InitSecrets are not ready, initialize them
+    if (!InitSecretsReady(_initSecrets)) {
 
-      // _initSecrets = new InitSecrets(k8sApi);
-      //await _initSecrets.getZarfStateSecret();
-      await _initSecrets.getZarfPrivateRegistrySecret()
+      try {
+        await _initSecrets.getZarfStateSecret();
+        await _initSecrets.getZarfPrivateRegistrySecret()
 
-      Log.info(`Does logging work??`)
+        Log.info(`InitSecrets initialized. 💯`)
 
+      }
+      catch (err) {
+        Log.error("Secrets in zarf namespace do not exist", err);
+      }
     }
-    catch (err) {
-      Log.error("Secrets in zarf namespace do not exist", err);
-
-    }
-
   });

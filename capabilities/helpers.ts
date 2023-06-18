@@ -1,8 +1,8 @@
 import { IInitSecret } from "./api-types";
 import {
-
     Log
 } from "pepr";
+
 export function InitSecretsReady(_initSecrets: IInitSecret): boolean {
     let found: boolean = false;
     try {

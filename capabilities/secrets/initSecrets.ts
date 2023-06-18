@@ -10,7 +10,7 @@ export class InitSecrets {
 
   zarfStateSecretName = "zarf-state";
   zarfStateSecretNamespace = "zarf";
-  zarfStateSecretKeys = ["registryInfo"]
+  zarfStateSecretKeys = ["state"]
   privateRegistrySecretName = "private-registry";
   privateRegistrySecretNamespace = "zarf";
   privateRegistrySecretKeys = [".dockerconfigjson"];
@@ -44,7 +44,7 @@ export class InitSecrets {
       this.zarfStateSecretNamespace,
       this.zarfStateSecretKeys
     );
-    Log.info("Zarf state secret: ", JSON.stringify(secretData));
+
     this.zarfStateSecret = secretData;
 
     return secretData;
@@ -56,7 +56,7 @@ export class InitSecrets {
       this.privateRegistrySecretNamespace,
       this.privateRegistrySecretKeys
     );
-    Log.info("Private registry secret: ", JSON.stringify(secretData, undefined, 2));
+
     this.privateRegistrySecret = secretData;
 
     return secretData;
