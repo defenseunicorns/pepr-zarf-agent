@@ -69,8 +69,16 @@ export class InitSecrets {
     await this.k8sApi.createOrUpdateSecret(name, namespace, secretData);
   }
 
-  async patchPodImagePullSecret(name: string, namespace: string): Promise<void> {
-    await this.k8sApi.addImagePullSecretToPod(name, namespace, this.privateRegistrySecretName);
+  async patchPodImagePullSecret(
+    name: string,
+    namespace: string
+  ): Promise<void> {
+    await this.k8sApi.addImagePullSecretToPod(
+      name,
+      namespace,
+      this.privateRegistrySecretName
+    );
+    return;
   }
 
   // async buildAuthserviceSecret() {

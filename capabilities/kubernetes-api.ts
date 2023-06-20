@@ -4,7 +4,7 @@ import {
   CoreV1Api,
   KubeConfig,
   V1Secret,
-  PatchUtils
+  PatchUtils,
 } from "@kubernetes/client-node";
 
 import { fetchStatus } from "pepr";
@@ -19,43 +19,65 @@ export class K8sAPI {
     this.k8sApi = kc.makeApiClient(CoreV1Api);
     this.k8sAppsV1Api = kc.makeApiClient(AppsV1Api);
   }
-  async addImagePullSecretToPod(name: string, namespace: string, secretName: string): Promise<void> {
-   try {
-    const pod = await this.k8sApi.readNamespacedPod(name, namespace);
 
-    const imagePullSecret = {
-      name: secretName
-    };
-
-    if (!pod.body.spec.imagePullSecrets) {
-      pod.body.spec.imagePullSecrets = [];
+  async addImagePullSecretToPod(
+    name: string,
+    namespace: string,
+    secretName: string
+  ): Promise<void> {
+    try {
+      const patch = [
+        {
+          op: "replace",
+          path: "/spec/imagePullSecrets",
+          value: [
+            {
+              name: secretName,
+            },
+          ],
+        },
+      ];
+      this.k8sApi
+        .patchNamespacedPod(
+          name,
+          namespace,
+          patch,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          { headers: { "content-type": "application/json-patch+json" } }
+        )
+        .then(() => {
+          Log.info("Pod patched successfully.");
+        })
+        .catch(error => {
+          Log.error("Error patching pod:", JSON.stringify(error.response.body));
+        });
+    } catch (err) {
+      Log.error("Could not add imagePullSecret to pod", err);
     }
+    //   this.k8sApi.readNamespacedPod(name, namespace)
+    //     .then(({ body: pod }) => {
+    //       // Append the new imagePullSecret to the existing imagePullSecrets array
+    //       const updatedImagePullSecrets = pod.spec.imagePullSecrets || [];
+    //       updatedImagePullSecrets.push({ name: secretName });
 
-    pod.body.spec.imagePullSecrets.push(imagePullSecret);
+    //       // Update the pod with the modified imagePullSecrets
+    //       pod.spec.imagePullSecrets = updatedImagePullSecrets;
 
-    const updatedPod = await this.k8sApi.replaceNamespacedPod(name, namespace, pod.body);
-    Log.info('Pod updated successfully:', JSON.stringify(updatedPod.body));
-  } catch (error) {
-    Log.error('Error adding imagePullSecret to pod:', JSON.stringify(error.response.body));
-  }
-    // const patch = [
-    //   {
-    //     op: 'add',
-    //     path: '/spec/imagePullSecrets',
-    //     value: [
-    //       {
-    //         name: secretName
-    //       }
-    //     ]
-    //   }
-    // ];
-    // const options = { "headers": { "Content-type": PatchUtils.PATCH_FORMAT_JSON_PATCH}};
-    // return this.k8sApi.patchNamespacedPod(name, namespace, patch,undefined, undefined, undefined, undefined, undefined, options).then((response) => {
-    //   Log.info('Pod patched successfully:'+ response.body);
-    // })
-    // .catch((error) => {
-    //   Log.error('Error patching pod:', JSON.stringify(error.response.body));
-    // });
+    //       return this.k8sApi.replaceNamespacedPod(name, namespace, pod);
+    //     })
+    //     .then(() => {
+    //       Log.info('Pod updated successfully.');
+    //     })
+    //     .catch((error) => {
+    //       Log.error('Error updating pod:', JSON.stringify(error.response.body));
+    //     });
+    // } catch (err) {
+    //   Log.error("Could not add imagePullSecret to pod", err);
+    // }
   }
   async getSecretValues(
     name: string,

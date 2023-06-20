@@ -45,7 +45,7 @@ When(a.ConfigMap)
   });
 
 When(a.Pod)
-  .IsCreatedOrUpdated()
+  .IsCreated()
   .Then(async pod => {
     // Turn up logging
     Log.SetLogLevel("debug");
@@ -83,17 +83,18 @@ When(a.Pod)
             pod.Raw?.metadata?.namespace +
             " namespace. "
         );
-  
       } catch (err) {
         Log.error("Could not create imagePullSecret in pod namespace", err);
       }
       // Add imagePullSecret to Pod
       try {
-        Log.info("Adding imagePullSecret to pod", pod.Raw?.metadata?.name + " " + pod.Raw?.metadata?.namespace)
-        await _initSecrets.patchPodImagePullSecret(pod.Raw?.metadata?.name, pod.Raw?.metadata?.namespace)
-      }
-      catch (err) {
+        pod.Raw?.spec?.imagePullSecrets?.push({
+          name: _initSecrets.privateRegistrySecretName,
+        });
+        // Log.info("Adding imagePullSecret to pod", pod.Raw?.metadata?.name + " " + pod.Raw?.metadata?.namespace)
+        // await _initSecrets.patchPodImagePullSecret(pod.Raw?.metadata?.name, pod.Raw?.metadata?.namespace)
+      } catch (err) {
         Log.error("Could not add imagePullSecret to pod", err);
-      }  
+      }
     }
-  })
+  });

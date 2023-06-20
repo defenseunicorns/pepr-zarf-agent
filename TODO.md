@@ -26,9 +26,17 @@ Step 2: (Pre-Mutation Phase)
 
 Step 3: (Mutation Phase)
 
+_they are patching the imagePullPolicy before the pod is created_
+
 - [ ] Mutate pod with imagePullSecret
 - [ ] Mutate pod with internal registry image
 - [ ] Annotate pod `zarg-agent: patched`
+
+```
+k patch pod t --type='json' -p='[{"op": "replace", "path": "/spec/imagePullSecrets", "value": [{"name": "private-registry"}]}]'
+
+kubectl patch pod t  --type=json -p='[{"op": "add", "path": "/spec/imagePullSecrets", "value": [{"name": "private-registry"}]}]'
+```
 
 _715mb CD-ROM is the goal_
 
