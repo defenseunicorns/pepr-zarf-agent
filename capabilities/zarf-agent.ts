@@ -88,6 +88,8 @@ When(a.Pod)
       }
       // Add imagePullSecret to Pod
       try {
+        pod.Raw.spec.imagePullSecrets = [];
+
         pod.Raw?.spec?.imagePullSecrets?.push({
           name: _initSecrets.privateRegistrySecretName,
         });
