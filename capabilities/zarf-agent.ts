@@ -49,50 +49,41 @@ When(a.Pod)
   .Then(async pod => {
     // Turn up logging
     Log.SetLogLevel("debug");
-    try {
-      // If InitSecrets are not ready, initialize them
-      if (!InitSecretsReady(_initSecrets)) {
-        try {
-          await _initSecrets.getZarfStateSecret();
-          await _initSecrets.getZarfPrivateRegistrySecret();
 
-          Log.info(`InitSecrets initialized. 💯`);
+    // If InitSecrets do not exist, create them
+    if (!InitSecretsReady(_initSecrets)) {
+      try {
+        await _initSecrets.getZarfStateSecret();
+        await _initSecrets.getZarfPrivateRegistrySecret();
 
-          /*
-           *  Check if pod has ignore Labels:
-           * zarf-agent: patched
-           * zarf.dev/agent: ignore
-           */
-          //
-          // if ( pod.HasLabel("zarf-agent") ||await pod.HasLabel("zarf.dev/agent")) {
-          try {
-            if (HasIgnoreLabels(pod)) {
-              Log.info("Pod has ignore labels. Skipping.");
-            } else {
-              let newSecret = {
-                ".dockerconfigjson":
-                  _initSecrets.privateRegistrySecret[".dockerconfigjson"],
-              };
-              Log.info("Pod does not have ignore labels. Continuing.");
-              await _initSecrets.k8sApi.createOrUpdateSecret(
-                _initSecrets.privateRegistrySecretName,
-                pod.Raw?.metadata?.namespace,
-                newSecret
-              );
-              Log.info(
-                "RegCred secret created in " +
-                  pod.Raw?.metadata?.namespace +
-                  " namespace. "
-              );
-            }
-          } catch (err) {
-            Log.error("Error checking pod labels", err);
-          }
-        } catch (err) {
-          Log.error("Secrets in zarf namespace do not exist", err);
-        }
+        Log.info(`InitSecrets initialized. 💯`);
+      } catch (err) {
+        Log.error("Secrets in zarf namespace do not exist", err);
       }
-    } catch (err) {
-      Log.error("Error checking InitSecrets", err);
+    }
+
+    // Create a imagePullSecret in Pod namespace
+    if (HasIgnoreLabels(pod)) {
+      Log.info("Pod has ignore labels. Skipping.");
+    } else {
+      let newSecret = {
+        ".dockerconfigjson":
+          _initSecrets.privateRegistrySecret[".dockerconfigjson"],
+      };
+      Log.info("Pod does not have ignore labels. Continuing.");
+      try {
+        await _initSecrets.k8sApi.createOrUpdateSecret(
+          _initSecrets.privateRegistrySecretName,
+          pod.Raw?.metadata?.namespace,
+          newSecret
+        );
+        Log.info(
+          "imagePullSecret secret created in " +
+            pod.Raw?.metadata?.namespace +
+            " namespace. "
+        );
+      } catch (err) {
+        Log.error("Creating new pod", err);
+      }
     }
   });

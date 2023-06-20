@@ -22,7 +22,7 @@ Step 1: (Initialization Phase)
 Step 2: (Pre-Mutation Phase)
 
 - [x] Get Pod without ignore labels/annotations
-- [ ] Deploy private-registry secret to pod namespace
+- [x] Deploy private-registry secret to pod namespace
 
 Step 3: (Mutation Phase)
 

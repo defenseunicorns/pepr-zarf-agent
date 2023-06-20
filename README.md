@@ -1,7 +1,51 @@
 # Pepr Module
 
+- [Demo Flow](#demo-flow)
 - [Unit Test](#unit-test)
 - [Fast Restart](#fast-restart)
+- [Lint](#lint)
+
+## Demo Flow
+
+Step 1: (Initialization Phase)
+
+- [x] Get Zarf State from secret and store in state
+- [x] Get private-registry secret and store in state
+
+Step 2: (Pre-Mutation Phase)
+
+- [x] Get Pod without ignore labels/annotations
+- [x] Deploy private-registry secret to pod namespace
+
+Step 3: (Mutation Phase)
+
+- [ ] Mutate pod with imagePullSecret
+- [ ] Mutate pod with internal registry image
+- [ ] Annotate pod `zarg-agent: patched`
+
+```bash
+└─[130] <git:(main 054055c✱) > k create ns new-ns
+namespace/new-ns created
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:29:57]
+└─[0] <git:(main 054055c✱) > k run new-pod -n new-ns --image=ng
+inx
+pod/new-pod created
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:30:10]
+└─[0] <git:(main 054055c✱) > k get secret -n new-ns
+NAME               TYPE     DATA   AGE
+private-registry   Opaque   1      6s
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:30:16]
+└─[0] <git:(main 054055c✱) > k create ns new-ns-2
+namespace/new-ns-2 created
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:30:39]
+└─[0] <git:(main 054055c✱) > k run ignore-me --image=nginx -l z
+arf-agent=ignore -n new-ns-2
+pod/ignore-me created
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:31:02]
+└─[0] <git:(main 054055c✱) > k get secret -n new-ns-2
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:31:18]
+└─[0] <git:(main 054055c✱) >
+```
 
 ## Unit Test
 
@@ -53,7 +97,8 @@ Ran all test suites.
 kind delete clusters --all;
 docker image prune -a -f;
 kind create cluster
-pepr build;k create -f dist;k delete po -n pepr-system --all --force; sleep 35;k logs deploy/$(kubectl get deployments --output=jsonpath='{.items[0].metadata.name}' -n pepr-system) -f -n pepr-system
+pepr build;k create -f dist;k delete po -n pepr-system --all --force; sleep 35;k wait --for=condition=Ready pod -l app -n pep
+r-system;k logs deploy/$(kubectl get deployments --output=jsonpath='{.items[0].metadata.name}' -n pepr-system) -f -n pepr-system
 
 k create ns zarf
 
@@ -85,4 +130,12 @@ metadata:
   namespace: zarf
 type: kubernetes.io/dockerconfigjson
 EOF
+```
+
+## Lint
+
+Lint the code
+
+```bash
+npx prettier --write .
 ```
