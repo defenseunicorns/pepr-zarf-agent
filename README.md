@@ -1,6 +1,49 @@
 # Pepr Module
 
+- [Unit Test](#unit-test)
+- [Fast Restart](#fast-restart)
+
+## Unit Test
+
+```bash
+$ npx test
+ console.log
+    [info]              Checking init secrets
+
+      at Logger.log (node_modules/pepr/src/lib/logger.ts:121:17)
+
+  console.log
+    [info]              Init secrets not initialized
+
+      at Logger.log (node_modules/pepr/src/lib/logger.ts:121:17)
+
+  console.log
+    [info]              Checking init secrets
+
+      at Logger.log (node_modules/pepr/src/lib/logger.ts:121:17)
+
+  console.log
+    [info]              Init secrets initialized
+
+      at Logger.log (node_modules/pepr/src/lib/logger.ts:121:17)
+
+ PASS  capabilities/helpers.test.ts
+  InitSecretsReady function
+    ✓ returns false when secrets are not initialized (19 ms)
+    ✓ returns true when secrets are initialized (2 ms)
+  HasIgnoreLabels function
+    ✓ returns false when pod has no ignore labels
+    ✓ returns true when pod has ignore labels
+
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        1.102 s, estimated 2 s
+Ran all test suites.
+```
+
 ## Fast Restart
+
 - Rebuild pepr-module
 - create the manifests
 - delete all pods in the pepr-system namespace
@@ -42,24 +85,4 @@ metadata:
   namespace: zarf
 type: kubernetes.io/dockerconfigjson
 EOF
-```
-This is a Pepr Module. [Pepr](https://github.com/defenseunicorns/pepr) is a Kubernetes transformation system
-written in Typescript.
-
-The `capabilities` directory contains all the capabilities for this module. By default,
-a capability is a single typescript file in the format of `capability-name.ts` that is
-imported in the root `pepr.ts` file as `import { HelloPepr } from "./capabilities/hello-pepr";`.
-Because this is typescript, you can organize this however you choose, e.g. creating a sub-folder
-per-capability or common logic in shared files or folders.
-
-Example Structure:
-
-```
-Module Root
-├── package.json
-├── pepr.ts
-└── capabilities
-    ├── example-one.ts
-    ├── example-three.ts
-    └── example-two.ts
 ```

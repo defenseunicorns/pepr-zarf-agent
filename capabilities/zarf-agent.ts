@@ -1,11 +1,7 @@
-import {
-  Capability,
-  a,
-  Log
-} from "pepr";
+import { Capability, a, Log } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
-import { InitSecretsReady } from "./helpers";
+import { InitSecretsReady, HasIgnoreLabels } from "./helpers";
 /**
  *  The HelloPepr Capability is an example capability to demonstrate some general concepts of Pepr.
  *  To test this capability you can run `pepr dev` or `npm start` and then run the following command:
@@ -26,7 +22,6 @@ const { When } = ZarfAgent;
  */
 let _initSecrets = new InitSecrets(new K8sAPI());
 
-
 /**
  * ---------------------------------------------------------------------------------------------------
  *                                   CAPABILITY ACTION (Pod)                                   *
@@ -39,27 +34,65 @@ let _initSecrets = new InitSecrets(new K8sAPI());
 When(a.ConfigMap)
   .IsCreated()
   .Then(() => {
-    Log.info("Private Registry Secret", JSON.stringify(_initSecrets.privateRegistrySecret, undefined, 2));
-    Log.info("Zarf State Secret", JSON.stringify(_initSecrets.zarfStateSecret, undefined, 2));
-  })
+    Log.info(
+      "Private Registry Secret",
+      JSON.stringify(_initSecrets.privateRegistrySecret, undefined, 2)
+    );
+    Log.info(
+      "Zarf State Secret",
+      JSON.stringify(_initSecrets.zarfStateSecret, undefined, 2)
+    );
+  });
 
 When(a.Pod)
-  .IsCreated()
-  .Then(async () => {
+  .IsCreatedOrUpdated()
+  .Then(async pod => {
     // Turn up logging
     Log.SetLogLevel("debug");
-    // If InitSecrets are not ready, initialize them
-    if (!InitSecretsReady(_initSecrets)) {
+    try {
+      // If InitSecrets are not ready, initialize them
+      if (!InitSecretsReady(_initSecrets)) {
+        try {
+          await _initSecrets.getZarfStateSecret();
+          await _initSecrets.getZarfPrivateRegistrySecret();
 
-      try {
-        await _initSecrets.getZarfStateSecret();
-        await _initSecrets.getZarfPrivateRegistrySecret()
+          Log.info(`InitSecrets initialized. 💯`);
 
-        Log.info(`InitSecrets initialized. 💯`)
-
+          /*
+           *  Check if pod has ignore Labels:
+           * zarf-agent: patched
+           * zarf.dev/agent: ignore
+           */
+          //
+          // if ( pod.HasLabel("zarf-agent") ||await pod.HasLabel("zarf.dev/agent")) {
+          try {
+            if (HasIgnoreLabels(pod)) {
+              Log.info("Pod has ignore labels. Skipping.");
+            } else {
+              let newSecret = {
+                ".dockerconfigjson":
+                  _initSecrets.privateRegistrySecret[".dockerconfigjson"],
+              };
+              Log.info("Pod does not have ignore labels. Continuing.");
+              await _initSecrets.k8sApi.createOrUpdateSecret(
+                _initSecrets.privateRegistrySecretName,
+                pod.Raw?.metadata?.namespace,
+                newSecret
+              );
+              Log.info(
+                "RegCred secret created in " +
+                  pod.Raw?.metadata?.namespace +
+                  " namespace. "
+              );
+            }
+          } catch (err) {
+            Log.error("Error checking pod labels", err);
+          }
+        } catch (err) {
+          Log.error("Secrets in zarf namespace do not exist", err);
+        }
       }
-      catch (err) {
-        Log.error("Secrets in zarf namespace do not exist", err);
-      }
+    } catch (err) {
+      Log.error("Error checking InitSecrets", err);
     }
   });

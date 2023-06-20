@@ -21,7 +21,6 @@ export const HelloPepr = new Capability({
 // Use the 'When' function to create a new Capability Action
 const { When } = HelloPepr;
 
-
 /**
  * ---------------------------------------------------------------------------------------------------
  *                                   CAPABILITY ACTION (Namespace)                                   *

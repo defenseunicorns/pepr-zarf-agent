@@ -1,6 +1,4 @@
-import {
-  Log
-} from "pepr";
+import { Log } from "pepr";
 import { K8sAPI } from "../kubernetes-api";
 import { V1Secret } from "@kubernetes/client-node";
 import { ISecretData } from "../api-types";
@@ -10,10 +8,11 @@ export class InitSecrets {
 
   zarfStateSecretName = "zarf-state";
   zarfStateSecretNamespace = "zarf";
-  zarfStateSecretKeys = ["state"]
+  zarfStateSecretKeys = ["state"];
   privateRegistrySecretName = "private-registry";
   privateRegistrySecretNamespace = "zarf";
   privateRegistrySecretKeys = [".dockerconfigjson"];
+  privateRegistrySecretData: Record<string, string>;
 
   // TODO - type these
   zarfStateSecret: ISecretData;
@@ -62,6 +61,13 @@ export class InitSecrets {
     return secretData;
   }
 
+  async createOrUpdateSecret(
+    name: string,
+    namespace: string,
+    secretData: Record<string, string>
+  ): Promise<void> {
+    await this.k8sApi.createOrUpdateSecret(name, namespace, secretData);
+  }
 
   // async buildAuthserviceSecret() {
   //   const missionSecrets = await this.k8sApi.getSecretsByPattern(

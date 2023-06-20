@@ -3,21 +3,12 @@
     "browser": false,
     "es2021": true
   },
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended"
-  ],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2022
   },
-  "plugins": [
-    "@typescript-eslint"
-  ],
-  "ignorePatterns": [
-    "node_modules",
-    "dist",
-    "hack"
-  ],
+  "plugins": ["@typescript-eslint"],
+  "ignorePatterns": ["node_modules", "dist", "hack"],
   "root": true
 }

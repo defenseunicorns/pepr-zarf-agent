@@ -12,7 +12,6 @@ import { ZarfAgent } from "./capabilities/zarf-agent";
 new PeprModule(cfg, [
   // "HelloPepr" is a demo capability that is included with Pepr. Comment or delete the line below to remove it.
   // HelloPepr,
-  ZarfAgent
+  ZarfAgent,
   // Your additional capabilities go here
 ]);
-
