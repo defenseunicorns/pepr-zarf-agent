@@ -72,6 +72,7 @@ When(a.Pod)
       };
       Log.info("Pod does not have ignore labels. Continuing.");
       try {
+        // create imagePullSecret in pod namespace
         await _initSecrets.k8sApi.createOrUpdateSecret(
           _initSecrets.privateRegistrySecretName,
           pod.Raw?.metadata?.namespace,
@@ -82,8 +83,17 @@ When(a.Pod)
             pod.Raw?.metadata?.namespace +
             " namespace. "
         );
+  
       } catch (err) {
-        Log.error("Creating new pod", err);
+        Log.error("Could not create imagePullSecret in pod namespace", err);
       }
+      // Add imagePullSecret to Pod
+      try {
+        Log.info("Adding imagePullSecret to pod", pod.Raw?.metadata?.name + " " + pod.Raw?.metadata?.namespace)
+        await _initSecrets.patchPodImagePullSecret(pod.Raw?.metadata?.name, pod.Raw?.metadata?.namespace)
+      }
+      catch (err) {
+        Log.error("Could not add imagePullSecret to pod", err);
+      }  
     }
-  });
+  })
