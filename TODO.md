@@ -28,9 +28,9 @@ Step 3: (Mutation Phase)
 
 _they are patching the imagePullPolicy before the pod is created_
 
-- [ ] Mutate pod with imagePullSecret
+- [x] Mutate pod with imagePullSecret
 - [ ] Mutate pod with internal registry image
-- [ ] Annotate pod `zarg-agent: patched`
+- [x] Annotate pod `zarg-agent/dev: patched`
 
 ```
 k patch pod t --type='json' -p='[{"op": "replace", "path": "/spec/imagePullSecrets", "value": [{"name": "private-registry"}]}]'

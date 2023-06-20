@@ -63,7 +63,7 @@ When(a.Pod)
     }
 
     // Create a imagePullSecret in Pod namespace
-    if (HasIgnoreLabels(pod)) {
+    if(pod.HasLabel("zarf-agent") || pod.HasLabel("zarf.dev/ignore=true")) {
       Log.info("Pod has ignore labels. Skipping.");
     } else {
       let newSecret = {
@@ -88,13 +88,24 @@ When(a.Pod)
       }
       // Add imagePullSecret to Pod
       try {
+        // check if imagePullSecrets exist
         pod.Raw.spec.imagePullSecrets = [];
 
         pod.Raw?.spec?.imagePullSecrets?.push({
           name: _initSecrets.privateRegistrySecretName,
         });
-        // Log.info("Adding imagePullSecret to pod", pod.Raw?.metadata?.name + " " + pod.Raw?.metadata?.namespace)
-        // await _initSecrets.patchPodImagePullSecret(pod.Raw?.metadata?.name, pod.Raw?.metadata?.namespace)
+
+        // add ephermeral and init containers to pod
+        // check if other containers exist
+
+        pod.Raw.spec.initContainers = []
+        pod.Raw.spec.ephemeralContainers = []
+
+        pod.Raw.spec.containers.map(container => {
+          
+          container.image = _initSecrets.zarfStateSecret["registryInfo"]["address"] + "/" + container.image;
+        });
+        pod.SetAnnotation("zarf-agent", "patched");
       } catch (err) {
         Log.error("Could not add imagePullSecret to pod", err);
       }
