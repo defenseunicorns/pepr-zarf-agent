@@ -1,7 +1,7 @@
 import { Log } from "pepr";
 import { K8sAPI } from "../kubernetes-api";
 import { V1Secret } from "@kubernetes/client-node";
-import { ISecretData } from "../api-types";
+import { ISecretData, ZarfState, AuthData } from "../api-types";
 
 export class InitSecrets {
   k8sApi: K8sAPI;
@@ -14,13 +14,8 @@ export class InitSecrets {
   privateRegistrySecretKeys = [".dockerconfigjson"];
   privateRegistrySecretData: Record<string, string>;
 
-  // TODO - type these
-  zarfStateSecret: ISecretData;
-  privateRegistrySecret: ISecretData;
-
-  // authServiceNamespace = "authservice";
-  // authServiceSecretName = "authservice";
-  // authServiceConfigFileName = "config.json";
+  zarfStateSecret: ZarfState;
+  privateRegistrySecret: AuthData;
 
   constructor(k8sApi: K8sAPI) {
     this.k8sApi = k8sApi;
@@ -37,28 +32,30 @@ export class InitSecrets {
   }
 
   // TODO type this
-  async getZarfStateSecret(): Promise<ISecretData> {
+  async getZarfStateSecret(): Promise<ZarfState> {
     const secretData = await this.k8sApi.getSecretValues(
       this.zarfStateSecretName,
       this.zarfStateSecretNamespace,
       this.zarfStateSecretKeys
     );
 
-    this.zarfStateSecret = secretData;
+    const zarfState: ZarfState = JSON.parse(secretData.state);
 
-    return secretData;
+    this.zarfStateSecret = zarfState;
+    Log.info("Zarf State Secret", JSON.stringify(zarfState, undefined, 2));
+    return zarfState;
   }
 
-  async getZarfPrivateRegistrySecret(): Promise<ISecretData> {
+  async getZarfPrivateRegistrySecret(): Promise<AuthData> {
     const secretData = await this.k8sApi.getSecretValues(
       this.privateRegistrySecretName,
       this.privateRegistrySecretNamespace,
       this.privateRegistrySecretKeys
     );
+    const authData: AuthData = JSON.parse(secretData[".dockerconfigjson"]);
+    this.privateRegistrySecret = authData;
 
-    this.privateRegistrySecret = secretData;
-
-    return secretData;
+    return authData;
   }
 
   async createOrUpdateSecret(

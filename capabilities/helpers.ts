@@ -1,18 +1,22 @@
 import { IInitSecret } from "./api-types";
 import { Log, PeprRequest, a } from "pepr";
 
-export function BuildInternalImageURL(image: string, registryUrl: string): string {
-  let image_sections = image.split('/');
+export function BuildInternalImageURL(
+  image: string,
+  registryUrl: string
+): string {
+  let image_sections = image.split("/");
   if (image_sections.length === 3) {
     image_sections[0] = registryUrl;
   } else if (image_sections.length === 2) {
-    throw new Error('Unsupported image format. Please use fully qualified image name.');
-  }
-  else if (image_sections.length === 1) {
-    image_sections.unshift(registryUrl, 'library');
+    throw new Error(
+      "Unsupported image format. Please use fully qualified image name."
+    );
+  } else if (image_sections.length === 1) {
+    image_sections.unshift(registryUrl, "library");
   }
 
-  return image_sections.join('/');
+  return image_sections.join("/");
 }
 // this is not necessary a.HasLabels("zarf-agent") is sufficient
 export function HasIgnoreLabels(req: PeprRequest<a.Pod>): boolean {

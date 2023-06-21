@@ -1,4 +1,11 @@
 import { V1ListMeta, V1ObjectMeta } from "@kubernetes/client-node";
+export interface AuthData {
+  auths: {
+    [ipAddress: string]: {
+      auth: string;
+    };
+  };
+}
 
 export interface GroupVersionKind {
   /** The K8s resource kind, e..g "Pod". */
@@ -8,14 +15,46 @@ export interface GroupVersionKind {
   /** Optional, override the plural name for use in Webhook rules generation */
   readonly plural?: string;
 }
-
+/**
+ * Information about the repository Zarf is going to be using
+ *
+ * Information about the repository Zarf is configured to use
+ */
+export interface GitServerInfo {
+  /**
+   * URL address of the git server
+   */
+  address: string;
+  /**
+   * Indicates if we are using a git server that Zarf is directly managing
+   */
+  internalServer: boolean;
+  /**
+   * Password of a user with pull-only access to the git repository. If not provided for an
+   * external repository than the push-user is used
+   */
+  pullPassword: string;
+  /**
+   * Username of a user with pull-only access to the git repository. If not provided for an
+   * external repository than the push-user is used
+   */
+  pullUsername: string;
+  /**
+   * Password of a user with push access to the git repository
+   */
+  pushPassword: string;
+  /**
+   * Username of a user with push access to the git repository
+   */
+  pushUsername: string;
+}
 export interface ISecretData {
   [key: string]: string;
 }
 
 export interface IInitSecret {
-  privateRegistrySecret: ISecretData;
-  zarfStateSecret: ISecretData;
+  privateRegistrySecret: AuthData;
+  zarfStateSecret: ZarfState;
 }
 /**
  * Information about the container registry Zarf is going to be using
@@ -73,7 +112,68 @@ export interface RegistryInfo {
    */
   secret: string;
 }
+/**
+ * Information about the artifact registry Zarf is going to be using
+ *
+ * Information about the artifact registry Zarf is configured to use
+ */
+export interface ArtifactServerInfo {
+  /**
+   * URL address of the artifact registry
+   */
+  address: string;
+  /**
+   * Indicates if we are using a artifact registry that Zarf is directly managing
+   */
+  internalServer: boolean;
+  /**
+   * Password of a user with push access to the artifact registry
+   */
+  pushPassword: string;
+  /**
+   * Username of a user with push access to the artifact registry
+   */
+  pushUsername: string;
+}
 
+export interface GeneratedPKI {
+  ca: string;
+  cert: string;
+  key: string;
+}
+
+export interface ZarfState {
+  agentTLS: GeneratedPKI;
+  /**
+   * Machine architecture of the k8s node(s)
+   */
+  architecture: string;
+  /**
+   * Information about the artifact registry Zarf is configured to use
+   */
+  artifactServer: ArtifactServerInfo;
+  /**
+   * K8s distribution of the cluster Zarf was deployed to
+   */
+  distro: string;
+  /**
+   * Information about the repository Zarf is configured to use
+   */
+  gitServer: GitServerInfo;
+  /**
+   * Secret value that the internal Grafana server was seeded with
+   */
+  loggingSecret: string;
+  /**
+   * Information about the container registry Zarf is configured to use
+   */
+  registryInfo: RegistryInfo;
+  storageClass: string;
+  /**
+   * Indicates if Zarf was initialized while deploying its own k8s cluster
+   */
+  zarfAppliance: boolean;
+}
 export interface KubernetesObject {
   apiVersion?: string;
   kind?: string;

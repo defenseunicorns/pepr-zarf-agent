@@ -1,7 +1,7 @@
 import { Capability, a, Log } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
-import { InitSecretsReady, HasIgnoreLabels } from "./helpers";
+import { InitSecretsReady, BuildInternalImageURL } from "./helpers";
 /**
  *  The HelloPepr Capability is an example capability to demonstrate some general concepts of Pepr.
  *  To test this capability you can run `pepr dev` or `npm start` and then run the following command:
@@ -63,7 +63,7 @@ When(a.Pod)
     }
 
     // Create a imagePullSecret in Pod namespace
-    if(pod.HasLabel("zarf-agent") || pod.HasLabel("zarf.dev/ignore=true")) {
+    if (pod.HasLabel("zarf-agent") || pod.HasLabel("zarf.dev")) {
       Log.info("Pod has ignore labels. Skipping.");
     } else {
       let newSecret = {
@@ -88,26 +88,56 @@ When(a.Pod)
       }
       // Add imagePullSecret to Pod
       try {
-        // check if imagePullSecrets exist
         pod.Raw.spec.imagePullSecrets = [];
-
+        // check if imagePullSecrets exist
+        if (pod.Raw?.spec?.imagePullSecrets !== undefined) {
+          pod.Raw.spec.imagePullSecrets = [];
+        }
+        // add imagePullSecret to pod
         pod.Raw?.spec?.imagePullSecrets?.push({
           name: _initSecrets.privateRegistrySecretName,
         });
 
-        // add ephermeral and init containers to pod
-        // check if other containers exist
+        // if ephemeral containers exist - build BuildInternalImageURL
+        if (pod.Raw?.spec?.ephemeralContainers !== undefined) {
+          pod.Raw.spec.containers.map(container => {
+            let patched_image = BuildInternalImageURL(
+              container.image,
+              _initSecrets.zarfStateSecret.registryInfo.address
+            );
+            container.image = patched_image;
+          });
+        }
 
-        pod.Raw.spec.initContainers = []
-        pod.Raw.spec.ephemeralContainers = []
+        // check if init containers exist - build BuildInternalImageURL
+        if (pod.Raw?.spec?.initContainers !== undefined) {
+          pod.Raw.spec.containers.map(container => {
+            let patched_image = BuildInternalImageURL(
+              container.image,
+              _initSecrets.zarfStateSecret.registryInfo.address
+            );
+            container.image = patched_image;
+          });
+        }
 
-        pod.Raw.spec.containers.map(container => {
-          
-          container.image = _initSecrets.zarfStateSecret["registryInfo"]["address"] + "/" + container.image;
-        });
-        pod.SetAnnotation("zarf-agent", "patched");
       } catch (err) {
         Log.error("Could not add imagePullSecret to pod", err);
+      }
+
+      try {
+        //  containers - build BuildInternalImageURL
+        pod.Raw.spec.containers.map(container => {
+          let patched_image = BuildInternalImageURL(
+            container.image,
+            _initSecrets.zarfStateSecret.registryInfo.address
+          );
+          container.image = patched_image;
+        });
+
+        // add zarf-agent label to pod to be ignored next time
+        pod.SetAnnotation("zarf-agent", "patched");
+      } catch (err) {
+        Log.error("Could not patch image of pod", err);
       }
     }
   });
