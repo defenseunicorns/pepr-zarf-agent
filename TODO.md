@@ -29,7 +29,7 @@ Step 3: (Mutation Phase)
 _they are patching the imagePullPolicy before the pod is created_
 
 - [x] Mutate pod with imagePullSecret
-- [ ] Mutate pod with internal registry image
+- [x] Mutate pod with internal registry image
 - [x] Annotate pod `zarg-agent/dev: patched`
 
 ```

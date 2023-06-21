@@ -77,20 +77,20 @@ describe("InitSecretsReady function", () => {
   // Populates secrets
   let secrets: IInitSecret = {
     privateRegistrySecret: {
-      auths: { }
+      auths: {},
     },
     zarfStateSecret: {
       agentTLS: {
         ca: "",
         cert: "",
-        key: ""
+        key: "",
       },
       architecture: "",
       artifactServer: {
         address: "",
         internalServer: false,
         pushPassword: "",
-        pushUsername: ""
+        pushUsername: "",
       },
       distro: "",
       gitServer: {
@@ -99,7 +99,7 @@ describe("InitSecretsReady function", () => {
         pullPassword: "",
         pullUsername: "",
         pushPassword: "",
-        pushUsername: ""
+        pushUsername: "",
       },
       loggingSecret: "",
       registryInfo: {
@@ -110,13 +110,13 @@ describe("InitSecretsReady function", () => {
         pullUsername: "",
         pushPassword: "",
         pushUsername: "",
-        secret: ""
+        secret: "",
       },
       storageClass: "",
-      zarfAppliance: false
-    }
+      zarfAppliance: false,
+    },
   };
-  
+
   nonemptySecrets = new CreateInitSecret<IInitSecret>(secrets).initSecrets;
 
   test("returns true when secrets are initialized", () => {

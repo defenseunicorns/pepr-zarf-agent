@@ -63,7 +63,7 @@ When(a.Pod)
     }
 
     // Create a imagePullSecret in Pod namespace
-    if (pod.HasLabel("zarf-agent") || pod.HasLabel("zarf.dev")) {
+    if (pod.HasLabel("zarf-agent") || pod.HasLabel("zarf.dev/agent")) {
       Log.info("Pod has ignore labels. Skipping.");
     } else {
       let newSecret = {
@@ -119,7 +119,6 @@ When(a.Pod)
             container.image = patched_image;
           });
         }
-
       } catch (err) {
         Log.error("Could not add imagePullSecret to pod", err);
       }
@@ -135,7 +134,7 @@ When(a.Pod)
         });
 
         // add zarf-agent label to pod to be ignored next time
-        pod.SetAnnotation("zarf-agent", "patched");
+        pod.SetAnnotation("zarg-agent/dev", "patched");
       } catch (err) {
         Log.error("Could not patch image of pod", err);
       }
