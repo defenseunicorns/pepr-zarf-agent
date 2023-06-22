@@ -20,7 +20,7 @@ function tableConstructedFromPolynomial(): number[] {
   return crc32Table;
 }
 
-function GetCRCHash(data: string): number {
+export function GetCRCHash(data: string): number {
   let crc32Table = tableConstructedFromPolynomial();
   let crc = 0xffffffff; // Initial CRC value
 

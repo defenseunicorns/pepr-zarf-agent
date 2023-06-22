@@ -6,7 +6,8 @@ import {
   checkPattern,
   BuildInternalImageURL,
   ImageTransformHost,
-  ParseAnyReference
+  ParseAnyReference,
+  GetCRCHash
 } from "./helpers";
 
 // Initialize empty initSecrets
@@ -241,6 +242,32 @@ describe("ParseAnyReference", () => {
       expect(parsedRefs).toEqual(expectedResult);
     });
 });
+
+describe("GetCRCHash", () => {
+  let inputs = [
+    'docker.io/library/nginx',
+    'docker.io/library/nginx',
+    'docker.io/defenseunicorns/zarf-agent',
+    'ghcr.io/stefanprodan/podinfo',
+    'registry1.dso.mil/ironbank/opensource/defenseunicorns/zarf/zarf-agent',
+  ]
+  let expectedOutputs = [
+    "3793515731",
+    "3793515731",
+    "4283503412",
+    "2985051089",
+    "2003217571",
+  ]
+
+  it("creates the correct crc32 hashes", () => {
+    const hashedInputs = inputs.map((ref) => {
+      return GetCRCHash(ref).toString();
+    });
+    expect(hashedInputs).toEqual(expectedOutputs);
+  });
+});
+
+
 // describe("ImageTransformHost", () => {
 //   let imageRefs = [
 //     "nginx",
