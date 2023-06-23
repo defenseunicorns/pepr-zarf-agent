@@ -20,8 +20,9 @@ flowchart TD
     F --> D[Check Ignore Labels]
     D -->|Ignore Labels| G[Ignore Pod]
     D -->|No Ignore Labels| H[Create Internal Registry Secret in Pod Namespace]
-    H --"`init,ephemeral,container`"--> I[Add ImagePullSecret to all Pod containers]
-    I --> J[Annotate Pod]
+    H --"`init,ephemeral,container`"--> I[Patch container images ^^]
+    I --> J[Add Image Pull Secret]
+    J --> K[Annotate Pod]
 
 subgraph "`**Check Secret State**`"
   c("`Create **ConfigMap**`") -- "`While tailing logs`" --> d("See init secrets state") --> e("If pod has been created without ignore labels")
