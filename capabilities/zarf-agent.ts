@@ -36,11 +36,11 @@ When(a.ConfigMap)
   .Then(() => {
     Log.info(
       "Private Registry Secret",
-      JSON.stringify(_initSecrets.privateRegistrySecret, undefined, 2)
+      JSON.stringify(_initSecrets.privateRegistrySecretData[".dockerconfigjson"], undefined, 2)
     );
     Log.info(
       "Zarf State Secret",
-      JSON.stringify(_initSecrets.zarfStateSecret, undefined, 2)
+      JSON.stringify(_initSecrets.zarfStateSecretData["state"], undefined, 2)
     );
   });
 

@@ -2,6 +2,7 @@
 
 - [High Level Overview](#high-level-overview)
 - [Check List](#check-list)
+- [Demo](#demo)
 - [Unit Test](#unit-test)
 - [Fast Restart](#fast-restart)
 - [Lint](#lint)
@@ -21,6 +22,10 @@ flowchart TD
     D -->|No Ignore Labels| H[Create Internal Registry Secret in Pod Namespace]
     H --"`init,ephemeral,container`"--> I[Add ImagePullSecret to all Pod containers]
     I --> J[Annotate Pod]
+
+subgraph "`**Check Secret State**`"
+  c("`Create **ConfigMap**`") -- "`While tailing logs`" --> d("See init secrets state") --> e("If pod has been created without ignore labels")
+end
 ```
 
 ## Check List
@@ -47,6 +52,8 @@ Step 4: Implement transform pkg for TypeScript with Tests
 
 This flow creates a namespace, create a new pod in the namespace, and then checks the pod for the imagePullSecret and the internal registry image, and looks at the imagePullSecret.
 
+## Demo
+Warning: Needs improvement and is super raw..
 ```bash
 ┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-23 09:02:14]
 └─[0] <git:(main 0d82765✱) > k create ns new-ns
