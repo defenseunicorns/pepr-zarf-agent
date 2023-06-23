@@ -154,7 +154,7 @@ Ran all test suites.
 
 ## Fast Restart
 
-\*_Terminal 1_
+**Terminal 1**
 
 (This can be done by running `./rebuild.sh`)
 
