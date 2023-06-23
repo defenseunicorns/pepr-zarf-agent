@@ -68,7 +68,7 @@ When(a.Pod)
     } else {
       let newSecret = {
         ".dockerconfigjson":
-          _initSecrets.privateRegistrySecret[".dockerconfigjson"],
+          _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
       };
       Log.info("Pod does not have ignore labels. Continuing.");
       try {

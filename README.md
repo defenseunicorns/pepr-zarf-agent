@@ -1,11 +1,20 @@
 # Pepr Module
 
-- [Demo Flow](#demo-flow)
+- [High Level Overview](#high-level-overview)
+- [Check List](#check-list)
 - [Unit Test](#unit-test)
 - [Fast Restart](#fast-restart)
 - [Lint](#lint)
 
-## Demo Flow
+## High Level Overview
+
+```mermaid
+flowchart TD
+    Start --> Stop
+```
+
+
+## Check List
 
 Step 1: (Initialization Phase)
 
@@ -28,27 +37,58 @@ Step 4: Implement transform pkg for TypeScript with Tests
 - [x] Images
 
 ```bash
-└─[130] <git:(main 054055c✱) > k create ns new-ns
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-23 09:02:14]
+└─[0] <git:(main 0d82765✱) > k create ns new-ns
 namespace/new-ns created
-┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:29:57]
-└─[0] <git:(main 054055c✱) > k run new-pod -n new-ns --image=ng
-inx
-pod/new-pod created
-┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:30:10]
-└─[0] <git:(main 054055c✱) > k get secret -n new-ns
-NAME               TYPE     DATA   AGE
-private-registry   Opaque   1      6s
-┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:30:16]
-└─[0] <git:(main 054055c✱) > k create ns new-ns-2
-namespace/new-ns-2 created
-┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:30:39]
-└─[0] <git:(main 054055c✱) > k run ignore-me --image=nginx -l z
-arf-agent=ignore -n new-ns-2
-pod/ignore-me created
-┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:31:02]
-└─[0] <git:(main 054055c✱) > k get secret -n new-ns-2
-┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-20 09:31:18]
-└─[0] <git:(main 054055c✱) >
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-23 09:02:19]
+└─[0] <git:(main 0d82765✱) > k run new-po -n new-ns --image=nginx
+pod/new-po created
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-23 09:02:26]
+└─[0] <git:(main 0d82765✱) > k get po new-po -n new-ns -oyaml | egrep -A2 -b2 'imagePullSecret|patched|image'
+35-  annotations:
+50-    f64b6d4f-93ec-54d3-99a4-e70c751da008.pepr.dev/zarf-agent: succeeded
+122:    zarg-agent/dev: patched
+150-  creationTimestamp: "2023-06-23T13:02:26Z"
+194-  labels:
+--
+324-spec:
+330-  containers:
+344:  - image: 127.0.0.1:31999/library/nginx
+385:    imagePullPolicy: Always
+413-    name: new-po
+430-    resources: {}
+--
+668-  dnsPolicy: ClusterFirst
+694-  enableServiceLinks: true
+721:  imagePullSecrets:
+741-  - name: private-registry
+768-  nodeName: kind-control-plane
+--
+2342-    type: PodScheduled
+2365-  containerStatuses:
+2386:  - image: 127.0.0.1:31999/library/nginx
+2427:    imageID: ""
+2443-    lastState: {}
+2461-    name: new-po
+--
+2534-    state:
+2545-      waiting:
+2560:        message: 'rpc error: code = Unknown desc = failed to pull and unpack image
+2643-          "127.0.0.1:31999/library/nginx:latest": failed to resolve reference "127.0.0.1:31999/library/nginx:latest":
+2761-          failed to do request: Head "http://127.0.0.1:31999/v2/library/nginx/manifests/latest":
+┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-23 09:02:32]
+└─[0] <git:(main 0d82765✱) > k get secret private-registry -n new-ns -oyaml
+apiVersion: v1
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyIxMjcuMC4wLjE6MzE5OTkiOnsiYXV0aCI6ImVtRnlaaTF3ZFd4c09qVXpjMnhCVVRsUFMxaFJiVEYrUjBweFpHNUhlRForYlE9PSJ9fX0=
+kind: Secret
+metadata:
+  creationTimestamp: "2023-06-23T13:02:26Z"
+  name: private-registry
+  namespace: new-ns
+  resourceVersion: "872"
+  uid: a1d0f5fb-049c-422c-a2dd-06e73bec8ee4
+type: Opaque
 ```
 
 ## Unit Test
@@ -109,17 +149,31 @@ Ran all test suites.
 
 ## Fast Restart
 
-- Rebuild pepr-module
-- create the manifests
-- delete all pods in the pepr-system namespace
-- tail the logs of the pepr-system deployment
+**Terminal 1*
+
+(This can be done by running `./rebuild.sh`)
+- Delete the kind clusters
+- Prune the images (personal preference)
+- Build the Pepr module
+- Deploy the Pepr module
+- Wait for the hook pods to be ready
+- Tail the logs of the hook pods
+
+**Terminal 2**  
+
+(This can be done by running `./zarf-deps.sh`)
+- Create zarf namespace
+- Create zarf-state secret
+- Create internal-registry secret
 
 ```bash
+# terminal 1
 kind delete clusters --all;
 docker image prune -a -f;
 kind create cluster
 pepr build;k create -f dist;k delete po -n pepr-system --all --force; sleep 35;k wait --for=condition=Ready pod -l app -n pepr-system --timeout=180s;k logs deploy/$(kubectl get deployments --output=jsonpath='{.items[0].metadata.name}' -n pepr-system) -f -n pepr-system
 
+# terminal 2
 k create ns zarf
 
 k create -f -<<EOF
