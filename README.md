@@ -19,9 +19,13 @@ Step 2: (Pre-Mutation Phase)
 
 Step 3: (Mutation Phase)
 
-- [ ] Mutate pod with imagePullSecret
-- [ ] Mutate pod with internal registry image
-- [ ] Annotate pod `zarg-agent: patched`
+- [x] Mutate pod with imagePullSecret
+- [x] Mutate pod with internal registry image
+- [x] Annotate pod `zarg-agent: patched`
+
+Step 4: Implement transform pkg for TypeScript with Tests
+
+- [x] Images
 
 ```bash
 └─[130] <git:(main 054055c✱) > k create ns new-ns
@@ -51,7 +55,7 @@ pod/ignore-me created
 
 ```bash
 $ npx test
- console.log
+  console.log
     [info]              Checking init secrets
 
       at Logger.log (node_modules/pepr/src/lib/logger.ts:121:17)
@@ -73,16 +77,33 @@ $ npx test
 
  PASS  capabilities/helpers.test.ts
   InitSecretsReady function
-    ✓ returns false when secrets are not initialized (19 ms)
-    ✓ returns true when secrets are initialized (2 ms)
+    ✓ returns false when secrets are not initialized (18 ms)
+    ✓ returns true when secrets are initialized (3 ms)
   HasIgnoreLabels function
     ✓ returns false when pod has no ignore labels
     ✓ returns true when pod has ignore labels
+  BuildInternalImageURL
+    ✓ should build the internal image URL correctly for a three-section image
+    ✓ should throw an error for a malformed image (6 ms)
+    ✓ should build the internal image URL correctly for a one-section image
+  checkPattern
+    ✓ should return true if the beginning string matches the pattern
+    ✓ should return false if the beginning string does not match the pattern
+  ParseAnyReference
+    ✓ parses valid image references correctly (1 ms)
+  GetCRCHash
+    ✓ creates the correct crc32 hashes
+  ImageTransformHost
+    ✓ transforms valid image references correctly
+    ✓ throws errors for invalid image references (1 ms)
+  ImageTransformHostWithoutChecksum
+    ✓ transforms valid image references correctly (1 ms)
+    ✓ throws errors for invalid image references
 
 Test Suites: 1 passed, 1 total
-Tests:       4 passed, 4 total
+Tests:       15 passed, 15 total
 Snapshots:   0 total
-Time:        1.102 s, estimated 2 s
+Time:        0.968 s, estimated 2 s
 Ran all test suites.
 ```
 
