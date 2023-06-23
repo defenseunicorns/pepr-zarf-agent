@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+# Simulate the zarf installtion
 kubectl create ns zarf
 
 kubectl create -f -<<EOF
