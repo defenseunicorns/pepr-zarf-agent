@@ -25,6 +25,8 @@ jobs:
         run: npx jest
 
       - name: Verify commit messages
-        run: |
-          commit_message="$(git log --format=%B -n 1 ${{ github.sha }})"
-          echo "$commit_message" | grep -qiE '^(feat|fix|chore|docs|refactor|style|test)(\([^)]+\))?: .+$' || (echo "ERROR: Invalid commit message format." && exit 1)
+        with:
+          pattern: '\[(BUGFIX|DOCS|FEATURE|TASK)\] .+$'
+          error: 'Your first line has to contain a commit type like "[BUGFIX]".'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
