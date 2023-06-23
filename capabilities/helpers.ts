@@ -64,7 +64,25 @@ export function ImageTransformHost(
 ): string {
   let { host, path, tag, digest } = ParseAnyReference(srcReference);
 
+  let err = new Error(
+    "Unsupported image format. Please use fully qualified image name."
+  );
+
+  // check if there is a space in the srcReference
+  if (srcReference.includes(" ") || srcReference.includes("\\")) {
+    throw err;
+  }
+  // check for malformed srcReference
+  if (checkPattern(srcReference, /^http/)) {
+    throw err;
+  }
   // step 1 - update the host
+  let originalHost = host;
+  if (originalHost === "") {
+    originalHost = "docker.io";
+  }
+
+  
   host = targetHost;
 
   // step 2 - path
@@ -74,10 +92,14 @@ export function ImageTransformHost(
 
 
   // step 3 - Generate a crc32 hash of the image host + name
-  let checksum = GetCRCHash(host + path);
+  let checksum = GetCRCHash(originalHost +"/"+ path);
 
+  // step 4 - if tag is "" then use the latest
+  if (tag === "") {
+    tag = "latest";
+  }
   // If this image is specified by digest then don't add a checksum it as it will already be a specific SHA
-  if (digest !== undefined || digest !== "") {
+  if (digest !== "") {
     return `${host}/${path}@${digest}`;
   }
 

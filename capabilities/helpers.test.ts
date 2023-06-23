@@ -268,49 +268,49 @@ describe("GetCRCHash", () => {
 });
 
 
-// describe("ImageTransformHost", () => {
-//   let imageRefs = [
-//     "nginx",
-//     "nginx:1.23.3",
-//     "defenseunicorns/zarf-agent:v0.22.1",
-//     "defenseunicorns/zarf-agent@sha256:84605f731c6a18194794c51e70021c671ab064654b751aa57e905bce55be13de",
-//     "ghcr.io/stefanprodan/podinfo:6.3.3",
-//     "registry1.dso.mil/ironbank/opensource/defenseunicorns/zarf/zarf-agent:v0.25.0",
-//   ];
+describe("ImageTransformHost", () => {
+  let imageRefs = [
+    "nginx",
+    "nginx:1.23.3",
+    "defenseunicorns/zarf-agent:v0.22.1",
+    "defenseunicorns/zarf-agent@sha256:84605f731c6a18194794c51e70021c671ab064654b751aa57e905bce55be13de",
+    "ghcr.io/stefanprodan/podinfo:6.3.3",
+    "registry1.dso.mil/ironbank/opensource/defenseunicorns/zarf/zarf-agent:v0.25.0",
+  ];
 
-//   const expectedResult = [
-//     // Normal git repos and references for pushing/pulling
-//     "gitlab.com/project/library/nginx:latest-zarf-3793515731",
-//     "gitlab.com/project/library/nginx:1.23.3-zarf-3793515731",
-//     "gitlab.com/project/defenseunicorns/zarf-agent:v0.22.1-zarf-4283503412",
-//     "gitlab.com/project/defenseunicorns/zarf-agent@sha256:84605f731c6a18194794c51e70021c671ab064654b751aa57e905bce55be13de",
-//     "gitlab.com/project/stefanprodan/podinfo:6.3.3-zarf-2985051089",
-//     "gitlab.com/project/ironbank/opensource/defenseunicorns/zarf/zarf-agent:v0.25.0-zarf-2003217571",
-//   ];
+  const expectedResult = [
+    // Normal git repos and references for pushing/pulling
+    "gitlab.com/project/library/nginx:latest-zarf-3793515731",
+    "gitlab.com/project/library/nginx:1.23.3-zarf-3793515731",
+    "gitlab.com/project/defenseunicorns/zarf-agent:v0.22.1-zarf-4283503412",
+    "gitlab.com/project/defenseunicorns/zarf-agent@sha256:84605f731c6a18194794c51e70021c671ab064654b751aa57e905bce55be13de",
+    "gitlab.com/project/stefanprodan/podinfo:6.3.3-zarf-2985051089",
+    "gitlab.com/project/ironbank/opensource/defenseunicorns/zarf/zarf-agent:v0.25.0-zarf-2003217571",
+  ];
 
-//   const badImageRefs = [
-//     "i am not a ref at all",
-//     "C:\\Users\\zarf",
-//     "http://urls.are/not/refs",
-//   ];
+  const badImageRefs = [
+    "i am not a ref at all",
+    "C:\\Users\\zarf",
+    "http://urls.are/not/refs",
+  ];
 
-//   test('transforms valid image references correctly', () => {
-//     const transformedRefs = imageRefs.map((ref, idx) => {
-//       return ImageTransformHost('gitlab.com/project', ref);
-//     });
+  test('transforms valid image references correctly', () => {
+    const transformedRefs = imageRefs.map((ref, idx) => {
+      return ImageTransformHost('gitlab.com/project', ref);
+    });
 
-//     expect(transformedRefs).toEqual(expectedResult);
-//   });
+    expect(transformedRefs).toEqual(expectedResult);
+  });
 
-//   // test('throws errors for invalid image references', () => {
-//   //   const invalidRefs = badImageRefs.map((ref) => {
-//   //     return () => {
-//   //       ImageTransformHost('gitlab.com/project', ref);
-//   //     };
-//   //   });
+  test('throws errors for invalid image references', () => {
+    const invalidRefs = badImageRefs.map((ref) => {
+      return () => {
+        ImageTransformHost('gitlab.com/project', ref);
+      };
+    });
 
-//   //   invalidRefs.forEach((invalidRef) => {
-//   //     expect(invalidRef).toThrow();
-//   //   });
-//   // });
-// });
+    invalidRefs.forEach((invalidRef) => {
+      expect(invalidRef).toThrow(Error);
+    });
+  });
+});
