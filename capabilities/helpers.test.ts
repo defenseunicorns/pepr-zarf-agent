@@ -7,7 +7,7 @@ import {
   BuildInternalImageURL,
   ImageTransformHost,
   ParseAnyReference,
-  GetCRCHash
+  GetCRCHash,
 } from "./helpers";
 
 // Initialize empty initSecrets
@@ -195,7 +195,7 @@ describe("ParseAnyReference", () => {
   ];
 
   it("parses valid image references correctly", () => {
-    const parsedRefs = imageRefs.map((ref) => {
+    const parsedRefs = imageRefs.map(ref => {
       return ParseAnyReference(ref);
     });
 
@@ -239,34 +239,33 @@ describe("ParseAnyReference", () => {
       },
     ];
 
-      expect(parsedRefs).toEqual(expectedResult);
-    });
+    expect(parsedRefs).toEqual(expectedResult);
+  });
 });
 
 describe("GetCRCHash", () => {
   let inputs = [
-    'docker.io/library/nginx',
-    'docker.io/library/nginx',
-    'docker.io/defenseunicorns/zarf-agent',
-    'ghcr.io/stefanprodan/podinfo',
-    'registry1.dso.mil/ironbank/opensource/defenseunicorns/zarf/zarf-agent',
-  ]
+    "docker.io/library/nginx",
+    "docker.io/library/nginx",
+    "docker.io/defenseunicorns/zarf-agent",
+    "ghcr.io/stefanprodan/podinfo",
+    "registry1.dso.mil/ironbank/opensource/defenseunicorns/zarf/zarf-agent",
+  ];
   let expectedOutputs = [
     "3793515731",
     "3793515731",
     "4283503412",
     "2985051089",
     "2003217571",
-  ]
+  ];
 
   it("creates the correct crc32 hashes", () => {
-    const hashedInputs = inputs.map((ref) => {
+    const hashedInputs = inputs.map(ref => {
       return GetCRCHash(ref).toString();
     });
     expect(hashedInputs).toEqual(expectedOutputs);
   });
 });
-
 
 describe("ImageTransformHost", () => {
   let imageRefs = [
@@ -294,22 +293,22 @@ describe("ImageTransformHost", () => {
     "http://urls.are/not/refs",
   ];
 
-  test('transforms valid image references correctly', () => {
+  test("transforms valid image references correctly", () => {
     const transformedRefs = imageRefs.map((ref, idx) => {
-      return ImageTransformHost('gitlab.com/project', ref);
+      return ImageTransformHost("gitlab.com/project", ref);
     });
 
     expect(transformedRefs).toEqual(expectedResult);
   });
 
-  test('throws errors for invalid image references', () => {
-    const invalidRefs = badImageRefs.map((ref) => {
+  test("throws errors for invalid image references", () => {
+    const invalidRefs = badImageRefs.map(ref => {
       return () => {
-        ImageTransformHost('gitlab.com/project', ref);
+        ImageTransformHost("gitlab.com/project", ref);
       };
     });
 
-    invalidRefs.forEach((invalidRef) => {
+    invalidRefs.forEach(invalidRef => {
       expect(invalidRef).toThrow(Error);
     });
   });

@@ -82,7 +82,6 @@ export function ImageTransformHost(
     originalHost = "docker.io";
   }
 
-  
   host = targetHost;
 
   // step 2 - path
@@ -90,9 +89,8 @@ export function ImageTransformHost(
     path = "library/" + path;
   }
 
-
   // step 3 - Generate a crc32 hash of the image host + name
-  let checksum = GetCRCHash(originalHost +"/"+ path);
+  let checksum = GetCRCHash(originalHost + "/" + path);
 
   // step 4 - if tag is "" then use the latest
   if (tag === "") {
