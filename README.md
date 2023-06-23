@@ -53,8 +53,6 @@ Step 4: Implement transform pkg for TypeScript with Tests
 
 ## Demo
 
-> WIP
-
 _This flow creates a namespace, create a new pod in the namespace, and then checks the pod for the imagePullSecret and the internal registry image, and looks at the imagePullSecret._
 
 ```bash
