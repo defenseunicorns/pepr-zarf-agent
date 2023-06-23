@@ -64,8 +64,14 @@ export function ImageTransformHost(
 ): string {
   let { host, path, tag, digest } = ParseAnyReference(srcReference);
 
-  // step 2 - update the host
+  // step 1 - update the host
   host = targetHost;
+
+  // step 2 - path
+  if (srcReference.split("/").length === 1) {
+    path = "library/" + path;
+  }
+
 
   // step 3 - Generate a crc32 hash of the image host + name
   let checksum = GetCRCHash(host + path);
