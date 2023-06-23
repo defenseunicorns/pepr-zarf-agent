@@ -103,9 +103,40 @@ export function ImageTransformHost(
 
   return `${host}/${path}:${tag}-zarf-${checksum}`;
 }
-// export function ImageTransformHostWithoutChecksum(targetHost: string, srcReference: string): string {
-//   let { host, path, tag, digest } = ParseAnyReference(srcReference);
-// }
+export function ImageTransformHostWithoutChecksum(targetHost: string, srcReference: string): string {
+  let { host, path, tag, digest } = ParseAnyReference(srcReference);
+
+  let err = new Error(
+    "Unsupported image format. Please use fully qualified image name."
+  );
+
+  // check if there is a space in the srcReference
+  if (srcReference.includes(" ") || srcReference.includes("\\")) {
+    throw err;
+  }
+  // check for malformed srcReference
+  if (checkPattern(srcReference, /^http/)) {
+    throw err;
+  }
+  // step 1 - update the host
+  let originalHost = host;
+  if (originalHost === "") {
+    originalHost = "docker.io";
+  }
+
+  host = targetHost;
+
+  // step 2 - path
+  if (srcReference.split("/").length === 1) {
+    path = "library/" + path;
+  }
+
+  // step 4 - if tag is "" then use the latest
+  if (tag === "" && digest === "") {
+    tag = "latest";
+  }
+  return `${host}/${path}${tag !== "" ? ":" + tag : ""}${digest !== "" ? "@" + digest : ""}`;
+}
 export function BuildInternalImageURL(
   image: string,
   registryUrl: string
