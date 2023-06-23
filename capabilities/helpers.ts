@@ -103,7 +103,10 @@ export function ImageTransformHost(
 
   return `${host}/${path}:${tag}-zarf-${checksum}`;
 }
-export function ImageTransformHostWithoutChecksum(targetHost: string, srcReference: string): string {
+export function ImageTransformHostWithoutChecksum(
+  targetHost: string,
+  srcReference: string
+): string {
   let { host, path, tag, digest } = ParseAnyReference(srcReference);
 
   let err = new Error(
@@ -135,7 +138,9 @@ export function ImageTransformHostWithoutChecksum(targetHost: string, srcReferen
   if (tag === "" && digest === "") {
     tag = "latest";
   }
-  return `${host}/${path}${tag !== "" ? ":" + tag : ""}${digest !== "" ? "@" + digest : ""}`;
+  return `${host}/${path}${tag !== "" ? ":" + tag : ""}${
+    digest !== "" ? "@" + digest : ""
+  }`;
 }
 export function BuildInternalImageURL(
   image: string,

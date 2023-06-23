@@ -23,7 +23,6 @@ flowchart TD
     I --> J[Annotate Pod]
 ```
 
-
 ## Check List
 
 Step 1: (Initialization Phase)
@@ -147,9 +146,10 @@ Ran all test suites.
 
 ## Fast Restart
 
-**Terminal 1*
+\*_Terminal 1_
 
 (This can be done by running `./rebuild.sh`)
+
 - Delete the kind clusters
 - Prune the images (personal preference)
 - Build the Pepr module
@@ -157,9 +157,10 @@ Ran all test suites.
 - Wait for the hook pods to be ready
 - Tail the logs of the hook pods
 
-**Terminal 2**  
+**Terminal 2**
 
 (This can be done by running `./zarf-deps.sh`)
+
 - Create zarf namespace
 - Create zarf-state secret
 - Create internal-registry secret
