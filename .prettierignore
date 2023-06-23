@@ -1,5 +1,10 @@
+*.yaml
+*.md
+*.js
+
 dist
 node_modules
 .eslintrs.json
 .vscode/pepr.code-snippets
 tsconfig.json
+.githib/workflows
