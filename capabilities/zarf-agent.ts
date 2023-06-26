@@ -1,7 +1,7 @@
 import { Capability, a, Log } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
-import { InitSecretsReady, BuildInternalImageURL } from "./helpers";
+import { InitSecretsReady, ImageTransformHostWithoutChecksum } from "./helpers";
 /**
  *  The HelloPepr Capability is an example capability to demonstrate some general concepts of Pepr.
  *  To test this capability you can run `pepr dev` or `npm start` and then run the following command:
@@ -112,9 +112,13 @@ When(a.Pod)
         // if ephemeral containers exist - build BuildInternalImageURL
         if (pod.Raw?.spec?.ephemeralContainers !== undefined) {
           pod.Raw.spec.ephemeralContainers.map(container => {
-            let patched_image = BuildInternalImageURL(
-              container.image,
-              _initSecrets.zarfStateSecret.registryInfo.address
+            // let patched_image = BuildInternalImageURL(
+            //   container.image,
+            //   _initSecrets.zarfStateSecret.registryInfo.address
+            // );
+            let patched_image = ImageTransformHostWithoutChecksum(
+              _initSecrets.zarfStateSecret.registryInfo.address,
+              container.image
             );
             container.image = patched_image;
           });
@@ -123,9 +127,13 @@ When(a.Pod)
         // check if init containers exist - build BuildInternalImageURL
         if (pod.Raw?.spec?.initContainers !== undefined) {
           pod.Raw.spec.initContainers.map(container => {
-            let patched_image = BuildInternalImageURL(
-              container.image,
-              _initSecrets.zarfStateSecret.registryInfo.address
+            // let patched_image = BuildInternalImageURL(
+            //   container.image,
+            //   _initSecrets.zarfStateSecret.registryInfo.address
+            // );
+            let patched_image = ImageTransformHostWithoutChecksum(
+              _initSecrets.zarfStateSecret.registryInfo.address,
+              container.image
             );
             container.image = patched_image;
           });
@@ -137,9 +145,13 @@ When(a.Pod)
       try {
         //  containers - build BuildInternalImageURL
         pod.Raw.spec.containers.map(container => {
-          let patched_image = BuildInternalImageURL(
-            container.image,
-            _initSecrets.zarfStateSecret.registryInfo.address
+          // let patched_image = BuildInternalImageURL(
+          //   container.image,
+          //   _initSecrets.zarfStateSecret.registryInfo.address
+          // );
+          let patched_image = ImageTransformHostWithoutChecksum(
+            _initSecrets.zarfStateSecret.registryInfo.address,
+            container.image
           );
           container.image = patched_image;
         });
