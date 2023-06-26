@@ -8,6 +8,7 @@ import {
   ImageTransformHost,
   ParseAnyReference,
   GetCRCHash,
+  UpdateContainerImages,
   ImageTransformHostWithoutChecksum,
 } from "./helpers";
 
@@ -23,6 +24,78 @@ class CreateInitSecret<T> {
   }
 }
 let operation: Operation = Operation.CREATE;
+let multiContainerPod: Request<a.Pod> = {
+  operation: operation,
+  uid: "1234",
+  kind: {
+    kind: "Pod",
+    group: "",
+    version: "v1",
+  },
+  resource: {
+    group: "",
+    version: "v1",
+    resource: "pods",
+  },
+  userInfo: {
+    username: "test",
+  },
+  object: {
+    spec: {
+      containers: [
+        {
+          image: "nginx",
+          name: "container",
+        },
+      ],
+      initContainers: [
+        {
+          image: "nginx",
+          name: "initContainer",
+        },
+      ],
+      ephemeralContainers: [
+        {
+          image: "nginx",
+          name: "ephemeralContainer",
+        },
+      ],
+    },
+  },
+  name: "multiContainerPod",
+  namespace: "default",
+};
+
+let singleContainerPod: Request<a.Pod> = {
+  operation: operation,
+  uid: "1234",
+  kind: {
+    kind: "Pod",
+    group: "",
+    version: "v1",
+  },
+  resource: {
+    group: "",
+    version: "v1",
+    resource: "pods",
+  },
+  userInfo: {
+    username: "test",
+  },
+  object: {
+    spec: {
+      containers: [
+        {
+          image: "nginx",
+          name: "container",
+        },
+      ],
+    },
+  },
+  name: "singleContainerPod",
+  namespace: "default",
+};
+
 let noLabels: Request<a.Pod> = {
   operation: operation,
   uid: "1234",
@@ -70,9 +143,9 @@ let withLabels: Request<a.Pod> = {
   name: "test",
   namespace: "default",
 };
-let withoutIgnoreLabelsPod = new PeprRequest<any>(noLabels);
+let withoutIgnoreLabelsPod = new PeprRequest<a.Pod>(noLabels);
 
-let ignoreLabelsPod = new PeprRequest<any>(withLabels);
+let ignoreLabelsPod = new PeprRequest<a.Pod>(withLabels);
 
 describe("InitSecretsReady function", () => {
   test("returns false when secrets are not initialized", () => {
@@ -320,6 +393,42 @@ describe("ImageTransformHostWithoutChecksum", () => {
     });
   });
 });
+
+describe("UpdateContainerImages", () => {
+  // pods
+  let mutliContainer = new PeprRequest<a.Pod>(multiContainerPod);
+  let singleContainer = new PeprRequest<a.Pod>(singleContainerPod);
+
+  // expected image
+  let expectedImage = "127.0.0.1:31999/library/nginx:latest-zarf-3793515731"
+
+  // internalRegistryAddress
+  let address = "127.0.0.1:31999";
+
+  test("updates container images correctly on pods with init and ephemeral containers", () => {
+
+    UpdateContainerImages(
+      mutliContainer,
+      address
+    );
+
+    expect(mutliContainer.Raw?.spec?.containers?.[0].image).toBe(expectedImage);
+    expect(mutliContainer.Raw?.spec?.initContainers?.[0].image).toBe(expectedImage);
+    expect(mutliContainer.Raw?.spec?.ephemeralContainers?.[0].image).toBe(expectedImage);
+  });
+
+  test("updates container images correctly on pods with only containers", () => {
+
+    UpdateContainerImages(
+      singleContainer,
+      address);
+
+    expect(singleContainer.Raw?.spec?.containers?.[0].image).toBe(expectedImage);
+    expect(singleContainer.Raw?.spec?.initContainers).toBe(undefined);
+    expect(singleContainer.Raw?.spec?.ephemeralContainers).toBe(undefined);
+  });
+});
+
 
 // Deprecated
 // describe("HasIgnoreLabels function", () => {
