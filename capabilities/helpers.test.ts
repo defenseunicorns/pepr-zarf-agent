@@ -1,10 +1,10 @@
 import { PeprRequest, a } from "pepr";
 import { IInitSecret, Operation, Request } from "./api-types";
 import {
-  HasIgnoreLabels,
+  // HasIgnoreLabels, Deprecated
   InitSecretsReady,
   checkPattern,
-  BuildInternalImageURL,
+  // BuildInternalImageURL, Deprecated
   ImageTransformHost,
   ParseAnyReference,
   GetCRCHash,
@@ -126,46 +126,6 @@ describe("InitSecretsReady function", () => {
 
   test("returns true when secrets are initialized", () => {
     expect(InitSecretsReady(nonemptySecrets)).toBe(true);
-  });
-});
-
-// TODO - test HasIgnoreLabels - to be removed
-describe("HasIgnoreLabels function", () => {
-  test("returns false when pod has no ignore labels", () => {
-    expect(HasIgnoreLabels(withoutIgnoreLabelsPod)).toBe(false);
-  });
-
-  test("returns true when pod has ignore labels", () => {
-    expect(HasIgnoreLabels(ignoreLabelsPod)).toBe(true);
-  });
-});
-// will be removed
-describe("BuildInternalImageURL", () => {
-  it("should build the internal image URL correctly for a three-section image", () => {
-    const image = "my-image:latest";
-    const registryUrl = "127.0.0.1:31999";
-
-    const result = BuildInternalImageURL(image, registryUrl);
-
-    expect(result).toBe("127.0.0.1:31999/library/my-image:latest");
-  });
-
-  it("should throw an error for a malformed image", () => {
-    const image = "http://docker.io/my-image:latest";
-    const registryUrl = "127.0.0.1:31999";
-
-    expect(() => {
-      BuildInternalImageURL(image, registryUrl);
-    }).toThrow(Error);
-  });
-
-  it("should build the internal image URL correctly for a one-section image", () => {
-    const image = "my-image:latest";
-    const registryUrl = "127.0.0.1:31999";
-
-    const result = BuildInternalImageURL(image, registryUrl);
-
-    expect(result).toBe("127.0.0.1:31999/library/my-image:latest");
   });
 });
 
@@ -360,3 +320,45 @@ describe("ImageTransformHostWithoutChecksum", () => {
     });
   });
 });
+
+
+
+// Deprecated
+// describe("HasIgnoreLabels function", () => {
+//   test("returns false when pod has no ignore labels", () => {
+//     expect(HasIgnoreLabels(withoutIgnoreLabelsPod)).toBe(false);
+//   });
+
+//   test("returns true when pod has ignore labels", () => {
+//     expect(HasIgnoreLabels(ignoreLabelsPod)).toBe(true);
+//   });
+// });
+// 
+// describe("BuildInternalImageURL", () => {
+//   it("should build the internal image URL correctly for a three-section image", () => {
+//     const image = "my-image:latest";
+//     const registryUrl = "127.0.0.1:31999";
+
+//     const result = BuildInternalImageURL(image, registryUrl);
+
+//     expect(result).toBe("127.0.0.1:31999/library/my-image:latest");
+//   });
+
+//   it("should throw an error for a malformed image", () => {
+//     const image = "http://docker.io/my-image:latest";
+//     const registryUrl = "127.0.0.1:31999";
+
+//     expect(() => {
+//       BuildInternalImageURL(image, registryUrl);
+//     }).toThrow(Error);
+//   });
+
+//   it("should build the internal image URL correctly for a one-section image", () => {
+//     const image = "my-image:latest";
+//     const registryUrl = "127.0.0.1:31999";
+
+//     const result = BuildInternalImageURL(image, registryUrl);
+
+//     expect(result).toBe("127.0.0.1:31999/library/my-image:latest");
+//   });
+// });
