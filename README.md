@@ -100,7 +100,7 @@ type: Opaque
 ## Unit Test
 
 ```bash
-$ npx test
+$ npx jest
   console.log
     [info]              Checking init secrets
 
