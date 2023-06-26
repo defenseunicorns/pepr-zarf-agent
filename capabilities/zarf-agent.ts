@@ -49,7 +49,7 @@ When(a.ConfigMap)
   });
 
 When(a.Pod)
-  .IsCreated()
+  .IsCreatedOrUpdated()
   .Then(async pod => {
     // Turn up logging
     Log.SetLogLevel("debug");
