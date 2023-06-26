@@ -34,18 +34,22 @@ let _initSecrets = new InitSecrets(new K8sAPI());
 When(a.ConfigMap)
   .IsCreated()
   .Then(() => {
-    Log.info(
-      "Private Registry Secret",
-      JSON.stringify(
-        _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
-        undefined,
-        2
-      )
-    );
-    Log.info(
-      "Zarf State Secret",
-      JSON.stringify(_initSecrets.zarfStateSecretData["state"], undefined, 2)
-    );
+    try {
+      Log.info(
+        "Private Registry Secret",
+        JSON.stringify(
+          _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
+          undefined,
+          2
+        )
+      );
+      Log.info(
+        "Zarf State Secret",
+        JSON.stringify(_initSecrets.zarfStateSecretData["state"], undefined, 2)
+      );
+    } catch (err) {
+      Log.error("Could not fetch secrets because pod has not been created", err);
+    }
   });
 
 When(a.Pod)
@@ -104,7 +108,7 @@ When(a.Pod)
 
         // if ephemeral containers exist - build BuildInternalImageURL
         if (pod.Raw?.spec?.ephemeralContainers !== undefined) {
-          pod.Raw.spec.containers.map(container => {
+          pod.Raw.spec.ephemeralContainers.map(container => {
             let patched_image = BuildInternalImageURL(
               container.image,
               _initSecrets.zarfStateSecret.registryInfo.address
@@ -115,7 +119,7 @@ When(a.Pod)
 
         // check if init containers exist - build BuildInternalImageURL
         if (pod.Raw?.spec?.initContainers !== undefined) {
-          pod.Raw.spec.containers.map(container => {
+          pod.Raw.spec.initContainers.map(container => {
             let patched_image = BuildInternalImageURL(
               container.image,
               _initSecrets.zarfStateSecret.registryInfo.address
