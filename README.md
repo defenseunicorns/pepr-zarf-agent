@@ -6,6 +6,7 @@
 - [Unit Test](#unit-test)
 - [Fast Restart](#fast-restart)
 - [Lint](#lint)
+- [Contributing](#contributing)
 
 ## High Level Overview
 
@@ -188,3 +189,14 @@ Lint the code
 ```bash
 npx prettier --write .
 ```
+
+
+## Contributing
+
+- Create PRs to the main branch
+- Create issues for bugs or feature requests
+- Create a new branch for each PR corresponding to issue number 
+- Write unit tests to prove logic
+- Sign commits with a key and include a [descriptive commit message](./.github/workflows/pr.yaml)
+
+- [TOP](#pepr-module)
