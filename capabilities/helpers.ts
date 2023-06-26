@@ -1,15 +1,15 @@
 import { IInitSecret } from "./api-types";
 import { Log, PeprRequest, a } from "pepr";
 
-export function UpdateContainerImages(pod: PeprRequest<a.Pod>, address: string) {
+export function UpdateContainerImages(
+  pod: PeprRequest<a.Pod>,
+  address: string
+) {
   try {
     // transform ephemeral container images
     if (pod.Raw?.spec?.ephemeralContainers !== undefined) {
       pod.Raw.spec.ephemeralContainers.map(container => {
-        let patched_image = ImageTransformHost(
-          address,
-          container.image
-        );
+        let patched_image = ImageTransformHost(address, container.image);
         container.image = patched_image;
       });
     }
@@ -17,27 +17,20 @@ export function UpdateContainerImages(pod: PeprRequest<a.Pod>, address: string) 
     // transform ephemeral container images
     if (pod.Raw?.spec?.initContainers !== undefined) {
       pod.Raw.spec.initContainers.map(container => {
-        let patched_image = ImageTransformHost(
-          address,
-          container.image
-        );
+        let patched_image = ImageTransformHost(address, container.image);
         container.image = patched_image;
       });
     }
 
     // transform container images
     pod.Raw.spec.containers.map(container => {
-      let patched_image = ImageTransformHost(
-        address,
-        container.image
-      );
+      let patched_image = ImageTransformHost(address, container.image);
       container.image = patched_image;
     });
   } catch (err) {
     Log.error("Could not add transform container images", err);
   }
 }
-
 
 function tableConstructedFromPolynomial(): number[] {
   const crc32Table: number[] = [];
@@ -176,8 +169,9 @@ export function ImageTransformHostWithoutChecksum(
   if (tag === "" && digest === "") {
     tag = "latest";
   }
-  return `${host}/${path}${tag !== "" ? ":" + tag : ""}${digest !== "" ? "@" + digest : ""
-    }`;
+  return `${host}/${path}${tag !== "" ? ":" + tag : ""}${
+    digest !== "" ? "@" + digest : ""
+  }`;
 }
 
 export function InitSecretsReady(_initSecrets: IInitSecret): boolean {
