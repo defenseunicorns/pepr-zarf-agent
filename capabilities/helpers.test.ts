@@ -400,35 +400,33 @@ describe("UpdateContainerImages", () => {
   let singleContainer = new PeprRequest<a.Pod>(singleContainerPod);
 
   // expected image
-  let expectedImage = "127.0.0.1:31999/library/nginx:latest-zarf-3793515731"
+  let expectedImage = "127.0.0.1:31999/library/nginx:latest-zarf-3793515731";
 
   // internalRegistryAddress
   let address = "127.0.0.1:31999";
 
   test("updates container images correctly on pods with init and ephemeral containers", () => {
-
-    UpdateContainerImages(
-      mutliContainer,
-      address
-    );
+    UpdateContainerImages(mutliContainer, address);
 
     expect(mutliContainer.Raw?.spec?.containers?.[0].image).toBe(expectedImage);
-    expect(mutliContainer.Raw?.spec?.initContainers?.[0].image).toBe(expectedImage);
-    expect(mutliContainer.Raw?.spec?.ephemeralContainers?.[0].image).toBe(expectedImage);
+    expect(mutliContainer.Raw?.spec?.initContainers?.[0].image).toBe(
+      expectedImage
+    );
+    expect(mutliContainer.Raw?.spec?.ephemeralContainers?.[0].image).toBe(
+      expectedImage
+    );
   });
 
   test("updates container images correctly on pods with only containers", () => {
+    UpdateContainerImages(singleContainer, address);
 
-    UpdateContainerImages(
-      singleContainer,
-      address);
-
-    expect(singleContainer.Raw?.spec?.containers?.[0].image).toBe(expectedImage);
+    expect(singleContainer.Raw?.spec?.containers?.[0].image).toBe(
+      expectedImage
+    );
     expect(singleContainer.Raw?.spec?.initContainers).toBe(undefined);
     expect(singleContainer.Raw?.spec?.ephemeralContainers).toBe(undefined);
   });
 });
-
 
 // Deprecated
 // describe("HasIgnoreLabels function", () => {
