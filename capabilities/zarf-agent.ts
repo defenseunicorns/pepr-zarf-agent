@@ -99,9 +99,8 @@ When(a.Pod)
       }
       // Add imagePullSecret to Pod
       try {
-        pod.Raw.spec.imagePullSecrets = [];
         // check if imagePullSecrets exist
-        if (pod.Raw?.spec?.imagePullSecrets !== undefined) {
+        if (pod.Raw?.spec?.imagePullSecrets !== undefined || pod.Raw?.spec?.imagePullSecrets !== null ) {
           pod.Raw.spec.imagePullSecrets = [];
         }
         // add imagePullSecret to pod
