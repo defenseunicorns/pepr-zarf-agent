@@ -321,8 +321,6 @@ describe("ImageTransformHostWithoutChecksum", () => {
   });
 });
 
-
-
 // Deprecated
 // describe("HasIgnoreLabels function", () => {
 //   test("returns false when pod has no ignore labels", () => {
@@ -333,7 +331,7 @@ describe("ImageTransformHostWithoutChecksum", () => {
 //     expect(HasIgnoreLabels(ignoreLabelsPod)).toBe(true);
 //   });
 // });
-// 
+//
 // describe("BuildInternalImageURL", () => {
 //   it("should build the internal image URL correctly for a three-section image", () => {
 //     const image = "my-image:latest";
