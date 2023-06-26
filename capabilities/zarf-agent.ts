@@ -48,7 +48,10 @@ When(a.ConfigMap)
         JSON.stringify(_initSecrets.zarfStateSecretData["state"], undefined, 2)
       );
     } catch (err) {
-      Log.error("Could not fetch secrets because pod has not been created", err);
+      Log.error(
+        "Could not fetch secrets because pod has not been created",
+        err
+      );
     }
   });
 
