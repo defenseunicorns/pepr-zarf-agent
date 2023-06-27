@@ -79,6 +79,7 @@ When(a.Pod)
     } else {
       Log.info("Pod does not have ignore labels. Continuing.");
       // Helm PostRenderer creates this secret
+      // Uncomment for testing w/out Zarf
       // let newSecret = {
       //   ".dockerconfigjson":
       //     _initSecrets.privateRegistrySecretData[".dockerconfigjson"],

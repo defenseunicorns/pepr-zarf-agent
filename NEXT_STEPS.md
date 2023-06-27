@@ -1,7 +1,7 @@
 - [x] Keep out privateRegistrySecret
-- [ ] sync go and typescript code
+- [ ] sync go and typescript code (WIP - still looking 👀)
 - [x] InitTransformCode -> InitTransformCodeWithoutChecksum
 - [x] containermap function common helper 
 - [x] get this working in a zarf initPackage "custom init package tutorial"
 - [x] zarf yaml taht comes from pepr, swap rootZrf yaml that comes with zarf 
-
+- [x] Pepr-Zarf-Agent tutorial

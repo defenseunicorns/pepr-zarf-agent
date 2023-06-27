@@ -2,6 +2,7 @@
 
 - [High Level Overview](#high-level-overview)
 - [Check List](#check-list)
+- [Full e2e Demo](#full-e2e-demo)
 - [Demo](#demo)
 - [Unit Test](#unit-test)
 - [Fast Restart](#fast-restart)
@@ -15,12 +16,12 @@ flowchart TD
     A[Pod Created] --> B{Check Init Secrets}
     B -->|Created| C[OK]
     B -->|Not Created| E[Save Zarf State Secret]
-    B -->|Not Created| F[Save Internal Registry Secret]
+    B -->|Not Created| F[Save Internal Registry Secret -- Deprecated]
     E --> D[Check Ignore Labels]
     C --> D[Check Ignore Labels]
     F --> D[Check Ignore Labels]
     D -->|Ignore Labels| G[Ignore Pod]
-    D -->|No Ignore Labels| H[Create Internal Registry Secret in Pod Namespace]
+    D -->|No Ignore Labels| H[Create Internal Registry Secret in Pod Namespace -- Deprecated]
     H --"`init,ephemeral,container`"--> I[Patch container images ^^]
     I --> J[Add Image Pull Secret]
     J --> K[Annotate Pod]
@@ -35,7 +36,7 @@ end
 Step 1: (Initialization Phase)
 
 - [x] Get Zarf State from secret and store in state
-- [x] Get private-registry secret and store in state
+- [x] Get private-registry secret and store in state (Helm PostRenderer does this -- Deprecated)
 
 Step 2: (Pre-Mutation Phase)
 
@@ -51,6 +52,94 @@ Step 3: (Mutation Phase)
 Step 4: Implement transform pkg for TypeScript with Tests
 
 - [x] Images
+
+## Full e2e Demo
+
+> In this e2e demo we will create a custom Zarf 'init' package that excludes the zarf-agent. We will then create a kind cluster and install Zarf. We will then deploy a zarf package for `hello-zarf` and check that the pod has the imagePullSecret, the internal registry image, and the application is working properly.
+
+Create the cluster.
+
+```bash
+kind create cluster --name=pepr-zarf-agent
+```
+Clone this repo with custom init package.
+
+```bash
+WORKING_DIR=$(pwd)
+cd /tmp
+git clone -b pepr-zarf-agent-e2e https://github.com/cmwylie19/zarf
+cd zarf
+```
+
+Read the Zarf Custom 'init' Package to see that the zarf-agent is commented out.
+
+```bash
+cat zarf.yaml | egrep -A 3 -B 1 'name: zarf-agent' 
+```
+
+Create, deploy the custom init package.
+
+```bash
+zarf package create --confirm
+zarf package deploy zarf-init* --confirm
+```
+
+Check that there is no zarf-agent running in Zarf namespace.
+
+```bash
+kubectl get po -n zarf
+```
+
+output
+
+```bash
+NAME                                    READY   STATUS    RESTARTS   AGE
+zarf-docker-registry-549c64ccb5-dvwd2   1/1     Running   0          9s
+```
+
+Deploy the Pepr Zarf Agent Kube Manifests and wait for pods to be in `READY` state.
+
+```bash
+kubectl create -f $WORKING_DIR/dist
+kubectl wait --for=condition=Ready pod -l app -n pepr-system --timeout=180s;
+```
+
+Clone `hello-zarf` repo, create and deploy the `hello-zarf` package.
+
+```bash
+# back to /tmp
+cd ..
+git clone https://github.com/cmwylie19/hello-zarf.git
+cd hello-zarf
+zarf package create k8s --confirm
+zarf package deploy zarf-package-k8s-manifests* --confirm
+```
+
+Check that the pod has the imagePullSecret, the internal registry image, annotation and the application is working properly.
+
+```bash
+kubectl get po -n webserver -oyaml | egrep -A2 -b2 'imagePullSecret|patched|image'
+```
+
+Curl the application to ensure it is working properly
+
+```bash
+kubectl run curler --image=nginx --restart=Never -l zarf.dev/agent=ignore --rm -it -- curl -s hello-zarf.webserver.svc.cluster.local:8081
+```
+
+expected output:
+
+```bash
+Let's kick Zarf's tires!🦄pod "curler" deleted
+```
+
+Clean Up
+
+```bash
+cd $WORKING_DIR
+kind delete cluster --name=pepr-zarf-agent
+rm -rf /tmp/zarf /tmp/hello-zarf
+```
 
 ## Demo
 
