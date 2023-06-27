@@ -77,6 +77,38 @@ Read the Zarf Custom 'init' Package to see that the zarf-agent is commented out.
 cat zarf.yaml | egrep -A 3 -B 1 'name: zarf-agent' 
 ```
 
+output
+
+```bash
+┌─[cmwylie19@Cases-MacBook-Pro] - [/tmp/hello-zarf] - [2023-06-27 10:30:34]
+└─[0] <git:(main c36a936✈) > kubectl get po -n webserver -oyaml | egrep -A2 -b2 'imagePullSecret|patched|image'
+63-    annotations:
+80-      f64b6d4f-93ec-54d3-99a4-e70c751da008.pepr.dev/zarf-agent: succeeded
+154:      zarg-agent/dev: patched
+184-    creationTimestamp: "2023-06-27T14:30:32Z"
+230-    generateName: hello-zarf-c558dd559-
+--
+703-    - command:
+718-      - ./hello-zarf
+739:      image: 127.0.0.1:31999/cmwylie19/hello-zarf:latest-zarf-4234714594
+812:      imagePullPolicy: Always
+842-      name: hello-zarf
+865-      resources: {}
+--
+1117-    dnsPolicy: ClusterFirst
+1145-    enableServiceLinks: true
+1174:    imagePullSecrets:
+1196-    - name: private-registry
+1225-    nodeName: pepr-zarf-agent-control-plane
+--
+2767-    containerStatuses:
+2790-    - containerID: containerd://d6b0c6f6156585de15a3c17c4db00f1b154357f0dbe48e7bbd9ae6129ae6b3b9
+2887:      image: 127.0.0.1:31999/cmwylie19/hello-zarf:latest-zarf-4234714594
+2960:      imageID: 127.0.0.1:31999/cmwylie19/hello-zarf@sha256:29b4b88b5728e440edd0d9b56b8f6204caf07281b5feb75c4f691b8425b1a929
+3084-      lastState: {}
+3104-      name: hello-zarf
+```
+
 Create, deploy the custom init package.
 
 ```bash
