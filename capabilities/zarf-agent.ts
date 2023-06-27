@@ -77,26 +77,29 @@ When(a.Pod)
     if (pod.HasLabel("zarf-agent") || pod.HasLabel("zarf.dev/agent")) {
       Log.info("Pod has ignore labels. Skipping.");
     } else {
-      let newSecret = {
-        ".dockerconfigjson":
-          _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
-      };
       Log.info("Pod does not have ignore labels. Continuing.");
-      try {
-        // create imagePullSecret in pod namespace
-        await _initSecrets.k8sApi.createOrUpdateSecret(
-          _initSecrets.privateRegistrySecretName,
-          pod.Raw?.metadata?.namespace,
-          newSecret
-        );
-        Log.info(
-          "imagePullSecret secret created in " +
-            pod.Raw?.metadata?.namespace +
-            " namespace. "
-        );
-      } catch (err) {
-        Log.error("Could not create imagePullSecret in pod namespace", err);
-      }
+      // Helm PostRenderer creates this secret
+      // let newSecret = {
+      //   ".dockerconfigjson":
+      //     _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
+      // };
+
+
+      // try {
+      //   // create imagePullSecret in pod namespace
+      //   await _initSecrets.k8sApi.createOrUpdateSecret(
+      //     _initSecrets.privateRegistrySecretName,
+      //     pod.Raw?.metadata?.namespace,
+      //     newSecret
+      //   );
+      //   Log.info(
+      //     "imagePullSecret secret created in " +
+      //       pod.Raw?.metadata?.namespace +
+      //       " namespace. "
+      //   );
+      // } catch (err) {
+      //   Log.error("Could not create imagePullSecret in pod namespace", err);
+      // }
       // Add imagePullSecret to Pod
       try {
         // check if imagePullSecrets exist
