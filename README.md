@@ -145,6 +145,8 @@ rm -rf /tmp/zarf /tmp/hello-zarf
 
 _This flow creates a namespace, create a new pod in the namespace, and then checks the pod for the imagePullSecret and the internal registry image, and looks at the imagePullSecret._
 
+**To test w/out Zarf uncomment everything under `Uncomment for testing w/out Zarf` in the zarf-agent and rebuild and redeploy**
+
 ```bash
 ┌─[cmwylie19@Cases-MacBook-Pro] - [~/pepr-zarf-agent] - [2023-06-26 09:55:12]
 └─[0] <git:(tree-shake 0f8d000✱✈) > k create ns new-ns
