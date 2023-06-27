@@ -62,6 +62,7 @@ Create the cluster.
 ```bash
 kind create cluster --name=pepr-zarf-agent
 ```
+
 Clone this repo with custom init package.
 
 ```bash
@@ -129,6 +130,36 @@ Check that the pod has the imagePullSecret, the internal registry image, annotat
 
 ```bash
 kubectl get po -n webserver -oyaml | egrep -A2 -b2 'imagePullSecret|patched|image'
+```
+
+output 
+
+```bash
+63-    annotations:
+80-      f64b6d4f-93ec-54d3-99a4-e70c751da008.pepr.dev/zarf-agent: succeeded
+154:      zarg-agent/dev: patched
+184-    creationTimestamp: "2023-06-27T15:29:59Z"
+230-    generateName: hello-zarf-c558dd559-
+--
+703-    - command:
+718-      - ./hello-zarf
+739:      image: 127.0.0.1:31999/cmwylie19/hello-zarf:latest-zarf-4234714594
+812:      imagePullPolicy: Always
+842-      name: hello-zarf
+865-      resources: {}
+--
+1117-    dnsPolicy: ClusterFirst
+1145-    enableServiceLinks: true
+1174:    imagePullSecrets:
+1196-    - name: private-registry
+1225-    nodeName: pepr-zarf-agent-control-plane
+--
+2767-    containerStatuses:
+2790-    - containerID: containerd://64d52516875ed3058a6bb0d018db404a35eaae462d8defda72c5dcc204446c26
+2887:      image: 127.0.0.1:31999/cmwylie19/hello-zarf:latest-zarf-4234714594
+2960:      imageID: 127.0.0.1:31999/cmwylie19/hello-zarf@sha256:29b4b88b5728e440edd0d9b56b8f6204caf07281b5feb75c4f691b8425b1a929
+3084-      lastState: {}
+3104-      name: hello-zarf
 ```
 
 Curl the application to ensure it is working properly
