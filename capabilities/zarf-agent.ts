@@ -84,7 +84,6 @@ When(a.Pod)
       //     _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
       // };
 
-
       // try {
       //   // create imagePullSecret in pod namespace
       //   await _initSecrets.k8sApi.createOrUpdateSecret(
