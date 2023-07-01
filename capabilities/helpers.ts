@@ -1,5 +1,33 @@
 import { IInitSecret } from "./api-types";
 import { Log, PeprRequest, a } from "pepr";
+export function GetImages(
+  pod: PeprRequest<a.Pod>,
+  containerType: string
+): string[] {
+  let images: string[] = [];
+  switch (containerType) {
+    case "init":
+      if (pod.Raw?.spec?.initContainers !== undefined) {
+        pod.Raw.spec.initContainers.map(container =>
+          images.push(container.image)
+        );
+      }
+      break;
+    case "ephemeral":
+      if (pod.Raw?.spec?.ephemeralContainers !== undefined) {
+        pod.Raw.spec.ephemeralContainers.map(container =>
+          images.push(container.image)
+        );
+      }
+      break;
+    default:
+      if (pod.Raw?.spec?.containers !== undefined) {
+        pod.Raw.spec.containers.map(container => images.push(container.image));
+      }
+      break;
+  }
+  return images;
+}
 
 export function UpdateContainerImages(
   pod: PeprRequest<a.Pod>,

@@ -1,7 +1,7 @@
 import { Log } from "pepr";
 import { K8sAPI } from "../kubernetes-api";
 import { V1Secret } from "@kubernetes/client-node";
-import { ISecretData, ZarfState, AuthData } from "../api-types";
+import { ZarfState, AuthData } from "../api-types";
 
 export class InitSecrets {
   k8sApi: K8sAPI;

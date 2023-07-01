@@ -1,7 +1,8 @@
 import { Capability, a, Log } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
-import { InitSecretsReady, UpdateContainerImages } from "./helpers";
+import { InitSecretsReady, UpdateContainerImages, GetImages } from "./helpers";
+import {TransformerAPI } from "./transformer-api";
 /**
  *  The HelloPepr Capability is an example capability to demonstrate some general concepts of Pepr.
  *  To test this capability you can run `pepr dev` or `npm start` and then run the following command:
@@ -18,9 +19,10 @@ const { When } = ZarfAgent;
 
 /**
  * ---------------------------------------------------------------------------------------------------
- * Initialize InitSecrets
+ * Initialize InitSecrets & TransformerAPI
  */
 let _initSecrets = new InitSecrets(new K8sAPI());
+let _transformer = new TransformerAPI();
 
 /**
  * ---------------------------------------------------------------------------------------------------
@@ -118,10 +120,19 @@ When(a.Pod)
       }
 
       try {
-        UpdateContainerImages(
-          pod,
-          _initSecrets.zarfStateSecret.registryInfo.address
-        );
+        // get images from pod
+        let ephemeralImages = GetImages(pod, "ephemeral");
+        Log.info("Images from pod: " + ephemeralImages);
+        let initImages = GetImages(pod, "init");
+        Log.info("Images from pod: " + initImages);
+        let images = GetImages(pod, "container");
+        Log.info("Images from pod: " + images);
+
+        // _transformer.imageTransformHost(pod.Raw?.spec?.ephemeralContainers?, _initSecrets.zarfStateSecret.registryInfo.address);
+        // UpdateContainerImages(
+        //   pod,
+        //   _initSecrets.zarfStateSecret.registryInfo.address
+        // );
 
         // add zarf-agent label to pod to be ignored next time
         pod.SetAnnotation("zarg-agent/dev", "patched");
