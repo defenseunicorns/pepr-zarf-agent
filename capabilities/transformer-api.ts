@@ -21,48 +21,44 @@ export class TransformerAPI {
   ): Promise<void> {
     if (pod.Raw?.spec?.initContainers !== undefined) {
       Promise.all(
-        pod.Raw.spec.initContainers.map(
-          async container =>{
-            try {
-              container.image = await this.imageTransformHost(address, container.image)
-            }
-            catch (err) {
-              Log.error("Error calling imageTransformHost", err.toString());
-            }
-          } 
-        )
+        pod.Raw.spec.initContainers.map(async container => {
+          try {
+            container.image = await this.imageTransformHost(
+              address,
+              container.image
+            );
+          } catch (err) {
+            Log.error("Error calling imageTransformHost", err.toString());
+          }
+        })
       );
     }
 
     if (pod.Raw?.spec?.ephemeralContainers !== undefined) {
       Promise.all(
-        pod.Raw.spec.ephemeralContainers.map(
-          async container =>{
-            try {
-              container.image = await this.imageTransformHost(address, container.image)
-            }
-            catch (err) {
-              Log.error("Error calling imageTransformHost", err.toString());
-            }
-          } 
-        )
+        pod.Raw.spec.ephemeralContainers.map(async container => {
+          try {
+            container.image = await this.imageTransformHost(
+              address,
+              container.image
+            );
+          } catch (err) {
+            Log.error("Error calling imageTransformHost", err.toString());
+          }
+        })
       );
     }
     if (pod.Raw?.spec?.containers !== undefined) {
       Promise.all(
-        pod.Raw.spec.containers.map(
-          async container =>{
-            try {
-              let image = await this.imageTransformHost(address, container.image)
-              container.image = image
-              Log.info("Transformed image: " + container.image);
-
-            }
-            catch (err) {
-              Log.error("Error calling imageTransformHost", err.toString());
-            }
-          } 
-        )
+        pod.Raw.spec.containers.map(async container => {
+          try {
+            let image = await this.imageTransformHost(address, container.image);
+            container.image = image;
+            Log.info("Transformed image: " + container.image);
+          } catch (err) {
+            Log.error("Error calling imageTransformHost", err.toString());
+          }
+        })
       );
     }
   }
