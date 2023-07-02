@@ -7,3 +7,9 @@
 - [x] Pepr-Zarf-Agent tutorial
 
 - [x] ADR - considered v8 go (c-deps, fragility), etc - If 10Mb or smaller go for it for now
+----
+- [ ] Makefile
+- [ ] Upgrade Pepr to latest
+- [ ] Analyze the size
+- [ ] GetImages unit test
+- [ ] Tree shake 

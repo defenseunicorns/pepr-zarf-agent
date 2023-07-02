@@ -2,7 +2,8 @@
 
 - [Prereqs](#prereqs)
 - [Compile Proto](#compile-proto)
-- [Curl Endpoints](#curl-endpoints)
+- [Curl Endpoints Local](#curl-endpoints-local)
+- [Curl Endpoints Kubernetes](#curl-endpoints-kubernetes)
 - [Build](#build)
 
 ## Prereqs
@@ -36,18 +37,19 @@ npm install -g ts-proto
 ## Compile Proto
 
 ```bash
-protoc api/v1/image/image.proto --go_out=.  --go-grpc_out=. --ts_out=ts_generated
+protoc api/v1/image/image.proto --go_out=.  --go-grpc_out=. 
 
 grpc_tools_node_protoc \
 --plugin=protoc-gen-ts=../node_modules/.bin/protoc-gen-ts \
 --ts_out=grpc_js:../capabilities/lib/images \
+--js_out=import_style=commonjs:../capabilities/lib/images \
 --grpc_out=grpc_js:../capabilities/lib/images \
--I .//api/v1/image/ \
+-I ./api/v1/image/ \
 ./api/v1/image/image.proto
 
 ```
 
-## Curl Endpoints
+## Curl Endpoints Local
 
 ```bash
 $ grpcurl -plaintext localhost:50051 list
@@ -76,13 +78,65 @@ $ grpcurl -plaintext -d '{"targetHost":"gitlab.com/project","srcReference":"ngin
 }
 ```
 
+## Curl Endpoints Kubernetes
+
+Deploy in dev mode
+
+```bash
+make deploy/dev
+
+# or 
+kubectl create -k transformer/deploy/dev
+```
+
+Create the debugger pod
+
+```bash
+kubectl run debugger --image=cmwylie19/grpcurl-debugger:0.0.1
+kubectl wait --for=condition=Ready Pod debugger --timeout=60s
+```
+
+List Services
+```bash
+kubectl exec -it debugger -- grpcurl -plaintext transformer.pepr-system.svc.cluster.local:50051 list
+
+# grpc.reflection.v1alpha.ServerReflection
+# image.defenseunicorns.com.ImageTransform
+``
+
+Describe Service
+```bash
+kubectl exec -it debugger -- grpcurl -plaintext transformer.pepr-system.svc.cluster.local:50051 describe image.defenseunicorns.com.ImageTransform
+
+# image.defenseunicorns.com.ImageTransform is a service:
+# service ImageTransform {
+#   rpc ImageTransformHost ( .image.defenseunicorns.com.TransformRequest ) returns ( .image.defenseunicorns.com.TransformResponse );
+#   rpc ImageTransformHostWithoutChecksum ( .image.defenseunicorns.com.TransformRequest ) returns ( .image.defenseunicorns.com.TransformResponse );
+# }
+```
+
+## Curl Endpoints Kubernetes
+
+ImageTransformHost  
+```bash
+kubectl exec -it debugger -- grpcurl -plaintext -d '{"targetHost":"gitlab.com/project","srcReference":"nginx"}' transformer.pepr-system.svc.cluster.local:50051 image.defenseunicorns.com.ImageTransform/ImageTransformHost
+
+# {
+#   "transformedImage": "gitlab.com/project/library/nginx:latest-zarf-3793515731"
+# }
+```
+
+ImageTransformHostWithoutChecksum
+```bash
+kubectl exec -it debugger -- grpcurl -plaintext -d '{"targetHost":"gitlab.com/project","srcReference":"nginx"}' transformer.pepr-system.svc.cluster.local:50051 image.defenseunicorns.com.ImageTransform/ImageTransformHostWithoutChecksum
+
+# {
+#   "transformedImage": "gitlab.com/project/library/nginx:latest"
+# }
+```
 
 ## Build
 
 ```bash
-GOARCH=amd64 GOOS=linux go build -o transformer . 
-mv transformer ./build/
-
-docker build -t cmwylie19/transformer:0.0.1 build/
-docker push cmwylie19/transformer:0.0.1
+make build
 ```

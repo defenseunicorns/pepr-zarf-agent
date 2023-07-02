@@ -8,6 +8,7 @@
 - [Fast Restart](#fast-restart)
 - [Lint](#lint)
 - [Contributing](#contributing)
+- [Developing](#developing)
 
 ## High Level Overview
 
@@ -401,5 +402,19 @@ npx prettier --write .
 - Create a new branch for each PR corresponding to issue number 
 - Write unit tests to prove logic
 - Sign commits with a key and include a [descriptive commit message](./.github/workflows/pr.yaml)
+
+## Developing
+
+Build the Pepr module, Transformer Service, and Debugger
+
+```bash
+make all
+```
+
+Check gRPC Server
+
+```bash
+make check/server
+```
 
 [TOP](#pepr-module)

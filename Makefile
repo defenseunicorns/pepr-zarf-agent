@@ -1,0 +1,48 @@
+# Makefile for building the Pepr Zarf Agent and the Transformer Service
+
+SHELL=bash
+DOCKER_USERNAME=cmwylie19
+TAG=0.0.1
+
+include transformer/Makefile
+
+.PHONY: build/pepr-zarf-agent
+build/pepr-zarf-agent:
+	@echo "Building Pepr Zarf Agent"
+	@pepr build
+
+.PHONY: build/transformer-service
+build/transformer-service: 
+	@cd transformer
+	@$(MAKE) -C transformer build/transformer-service
+
+.PHONY: build/debugger
+build/debugger:
+	@echo "Building Debugger"
+	@docker build . -t $(DOCKER_USERNAME)/grpcurl-debugger:$(TAG) -f grpcurl-debugger/Dockerfile
+	@docker push $(DOCKER_USERNAME)/grpcurl-debugger:$(TAG)
+
+.PHONY: deploy/dev
+deploy/dev:
+	@echo "Deploying to Dev"
+	@kubectl create -k transformer/k8s/overlays/dev 
+
+.PHONY: check/server
+check/server:
+	@echo "Checking Server"
+	@kubectl run debugger --image=cmwylie19/grpcurl-debugger:0.0.1
+	@echo "Waiting for server to be ready"
+	@kubectl wait --for=condition=Ready Pod debugger --timeout=60s
+	@echo "List gRPC Services"
+	@kubectl exec -it debugger -- grpcurl -plaintext transformer.pepr-system.svc.cluster.local:50051 list
+	@echo "Describe gRPC Service"
+	@kubectl exec -it debugger -- grpcurl -plaintext transformer.pepr-system.svc.cluster.local:50051 describe image.defenseunicorns.com.ImageTransform
+	@echo "Invoke gRPC Service -- ImageTransformHost"
+	@kubectl exec -it debugger -- grpcurl -plaintext -d '{"targetHost":"gitlab.com/project","srcReference":"nginx"}' transformer.pepr-system.svc.cluster.local:50051 image.defenseunicorns.com.ImageTransform/ImageTransformHost
+	@echo "Invoke gRPC Service -- ImageTransformHostWithoutChecksum"
+	@kubectl exec -it debugger -- grpcurl -plaintext -d '{"targetHost":"gitlab.com/project","srcReference":"nginx"}' transformer.pepr-system.svc.cluster.local:50051 image.defenseunicorns.com.ImageTransform/ImageTransformHostWithoutChecksum
+	@echo "Delete debugger"
+	@kubectl delete po debugger --force --grace-period=0
+
+all: build/pepr-zarf-agent build/transformer-service build/debugger
+	@echo "Building Pepr Zarf Agent, Transformer Service, and Debugger"
