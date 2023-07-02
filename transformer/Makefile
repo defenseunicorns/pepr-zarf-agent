@@ -6,7 +6,7 @@ TAG=0.0.1
 
 build/transformer-service:
 	@echo "Building Transformer Service"
-	@GOARCH=amd64 GOOS=linux go build -v -o transformer . 
+	@GOARCH=amd64 GOOS=linux go build -v -o transformer main.go
 	@mv transformer build/
 	@docker build -t $(DOCKER_USERNAME)/transformer:$(TAG) build 
 	@docker push $(DOCKER_USERNAME)/transformer:$(TAG)

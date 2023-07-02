@@ -659,10 +659,23 @@ Warning: Immediate deletion does not wait for confirmation that the running reso
 pod "debugger" force deleted
 ```
 
+Follow deployment logs
+
+```bash
+k logs -n pepr-system deploy/$(k get deploy -n pepr-system --no-headers | awk 'NR == 1{ print $1}') -f
+```
+
 Clean Up
 
 ```bash
 make clean
 ```
 
+## Size Analysis
+
+```bash
+~/go/bin/goweight > output.txt
+```
+
 [TOP](#pepr-module)
+
