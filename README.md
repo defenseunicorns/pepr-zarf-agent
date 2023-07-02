@@ -411,10 +411,219 @@ Build the Pepr module, Transformer Service, and Debugger
 make all
 ```
 
+output
+```bash
+Makefile:16: warning: overriding commands for target `build/transformer-service'
+transformer/Makefile:8: warning: ignoring old commands for target `build/transformer-service'
+Building Pepr Zarf Agent
+
+  dist/pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008.js                                               580.7kb  100.0%
+   ├ node_modules/google-protobuf/google-protobuf.js                                              246.7kb   42.5%
+   ├ node_modules/@grpc/grpc-js/build/src/server.js                                                15.2kb    2.6%
+   ├ node_modules/@grpc/grpc-js/build/src/load-balancer-outlier-detection.js                       12.0kb    2.1%
+   ├ node_modules/@grpc/grpc-js/build/src/retrying-call.js                                         11.2kb    1.9%
+   ├ node_modules/@grpc/grpc-js/build/src/server-call.js                                           10.8kb    1.9%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/ext/descriptor/index.js               10.8kb    1.9%
+   ├ node_modules/@grpc/grpc-js/build/src/channelz.js                                              10.1kb    1.7%
+   ├ node_modules/long/src/long.js                                                                  9.8kb    1.7%
+   ├ node_modules/@grpc/grpc-js/build/src/internal-channel.js                                       9.7kb    1.7%
+   ├ node_modules/@grpc/grpc-js/build/src/transport.js                                              9.6kb    1.7%
+   ├ node_modules/@grpc/grpc-js/build/src/service-config.js                                         8.2kb    1.4%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/parse.js                           7.7kb    1.3%
+   ├ node_modules/@grpc/grpc-js/build/src/subchannel-call.js                                        6.8kb    1.2%
+   ├ node_modules/@grpc/grpc-js/build/src/load-balancer-pick-first.js                               6.8kb    1.2%
+   ├ node_modules/@grpc/grpc-js/build/src/client-interceptors.js                                    6.5kb    1.1%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/type.js                            6.2kb    1.1%
+   ├ node_modules/@grpc/grpc-js/build/src/client.js                                                 6.2kb    1.1%
+   ├ capabilities/lib/images/image_pb.js                                                            6.2kb    1.1%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/google/protobuf/descriptor.json        6.1kb    1.0%
+   ├ node_modules/@grpc/grpc-js/build/src/subchannel.js                                             5.8kb    1.0%
+   ├ node_modules/lodash.camelcase/index.js                                                         5.6kb    1.0%
+   ├ node_modules/@grpc/grpc-js/build/src/resolving-call.js                                         5.3kb    0.9%
+   ├ node_modules/@grpc/grpc-js/build/src/load-balancing-call.js                                    5.1kb    0.9%
+   ├ node_modules/@grpc/grpc-js/build/src/resolver-dns.js                                           5.0kb    0.9%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/converter.js                       4.9kb    0.8%
+   ├ node_modules/@grpc/grpc-js/build/src/index.js                                                  4.6kb    0.8%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/reader.js                          4.3kb    0.7%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/namespace.js                       4.2kb    0.7%
+   ├ node_modules/@grpc/grpc-js/build/src/resolving-load-balancer.js                                4.1kb    0.7%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/writer.js                          3.7kb    0.6%
+   ├ node_modules/@grpc/grpc-js/build/src/compression-filter.js                                     3.7kb    0.6%
+   ├ node_modules/@grpc/grpc-js/build/src/load-balancer-round-robin.js                              3.6kb    0.6%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/field.js                           3.5kb    0.6%
+   ├ node_modules/@grpc/grpc-js/build/src/http_proxy.js                                             3.4kb    0.6%
+   ├ node_modules/@protobufjs/float/index.js                                                        3.4kb    0.6%
+   ├ node_modules/@grpc/proto-loader/build/src/index.js                                             3.3kb    0.6%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/root.js                            3.2kb    0.6%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/util/minimal.js                    3.2kb    0.6%
+   ├ node_modules/@grpc/grpc-js/build/src/experimental.js                                           2.7kb    0.5%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/tokenize.js                        2.6kb    0.5%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/verifier.js                        2.5kb    0.4%
+   ├ node_modules/@grpc/grpc-js/build/src/metadata.js                                               2.5kb    0.4%
+   ├ node_modules/@grpc/grpc-js/build/src/call.js                                                   2.5kb    0.4%
+   ├ node_modules/@grpc/grpc-js/build/src/channel-credentials.js                                    2.3kb    0.4%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/util.js                            2.3kb    0.4%
+   ├ node_modules/@grpc/grpc-js/package.json                                                        2.2kb    0.4%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/enum.js                            2.1kb    0.4%
+   ├ node_modules/@grpc/grpc-js/build/src/load-balancer-child-handler.js                            2.1kb    0.4%
+   ├ node_modules/@grpc/grpc-js/build/src/load-balancer.js                                          2.1kb    0.4%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/service.js                         2.0kb    0.3%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/object.js                          2.0kb    0.3%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/oneof.js                           1.9kb    0.3%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/util/longbits.js                   1.9kb    0.3%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/decoder.js                         1.9kb    0.3%
+   ├ node_modules/@grpc/grpc-js/build/src/stream-decoder.js                                         1.6kb    0.3%
+   ├ node_modules/@grpc/grpc-js/build/src/call-credentials.js                                       1.6kb    0.3%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/google/protobuf/type.json              1.6kb    0.3%
+   ├ node_modules/@grpc/grpc-js/build/src/make-client.js                                            1.5kb    0.3%
+   ├ node_modules/@grpc/grpc-js/build/src/backoff-timeout.js                                        1.5kb    0.3%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/common.js                          1.5kb    0.3%
+   ├ node_modules/@grpc/grpc-js/build/src/logging.js                                                1.5kb    0.3%
+   ├ capabilities/lib/images/image_grpc_pb.js                                                       1.5kb    0.3%
+   ├ node_modules/@grpc/grpc-js/build/src/resolver-ip.js                                            1.5kb    0.3%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/method.js                          1.4kb    0.2%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/encoder.js                         1.4kb    0.2%
+   ├ capabilities/kubernetes-api.ts                                                                 1.4kb    0.2%
+   ├ node_modules/@grpc/proto-loader/build/src/util.js                                              1.4kb    0.2%
+   ├ capabilities/secrets/initSecrets.ts                                                            1.4kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/call-interface.js                                         1.4kb    0.2%
+   ├ capabilities/zarf-agent.ts                                                                     1.4kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/max-message-size-filter.js                                1.3kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/constants.js                                              1.3kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/subchannel-pool.js                                        1.3kb    0.2%
+   ├ node_modules/@protobufjs/base64/index.js                                                       1.2kb    0.2%
+   ├ capabilities/transformer-api.ts                                                                1.2kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/server-credentials.js                                     1.2kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/channel-options.js                                        1.2kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/channel.js                                                1.1kb    0.2%
+   ├ node_modules/@protobufjs/utf8/index.js                                                         1.1kb    0.2%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/mapfield.js                        1.1kb    0.2%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/rpc/service.js                     1.1kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/filter-stack.js                                           1.0kb    0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/deadline.js                                              1008b     0.2%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/writer_buffer.js                   984b     0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/resolver.js                                               981b     0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/picker.js                                                 980b     0.2%
+   ├ node_modules/@protobufjs/codegen/index.js                                                      957b     0.2%
+   ├ node_modules/@protobufjs/fetch/index.js                                                        943b     0.2%
+   ├ node_modules/@grpc/grpc-js/build/src/uri-parser.js                                             901b     0.2%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/wrappers.js                        863b     0.1%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/google/protobuf/api.json               859b     0.1%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/message.js                         841b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/subchannel-address.js                                     746b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/subchannel-interface.js                                   736b     0.1%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/index-light.js                     684b     0.1%
+   ├ package.json                                                                                   642b     0.1%
+   ├ node_modules/@protobufjs/eventemitter/index.js                                                 624b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/control-plane-status.js                                   543b     0.1%
+   ├ node_modules/@protobufjs/path/index.js                                                         538b     0.1%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/reader_buffer.js                   528b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/status-builder.js                                         506b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/resolver-uds.js                                           503b     0.1%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/types.js                           500b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/duration.js                                               430b     0.1%
+   ├ node_modules/@protobufjs/aspromise/index.js                                                    425b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/admin.js                                                  421b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/tls-helpers.js                                            383b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/error.js                                                  368b     0.1%
+   ├ capabilities/helpers.ts                                                                        324b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/connectivity-state.js                                     324b     0.1%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/index-minimal.js                   319b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/filter.js                                                 301b     0.1%
+   ├ node_modules/@grpc/grpc-js/build/src/compression-algorithms.js                                 264b     0.0%
+   ├ node_modules/@protobufjs/inquire/index.js                                                      251b     0.0%
+   ├ node_modules/@protobufjs/pool/index.js                                                         242b     0.0%
+   ├ node_modules/@grpc/grpc-js/build/src/call-number.js                                            192b     0.0%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/index.js                           166b     0.0%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/google/protobuf/source_context.json    136b     0.0%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/rpc.js                              55b     0.0%
+   ├ node_modules/@grpc/proto-loader/node_modules/protobufjs/index.js                                50b     0.0%
+   ├ pepr.ts                                                                                         50b     0.0%
+   └ node_modules/@grpc/proto-loader/node_modules/protobufjs/src/roots.js                            48b     0.0%
+
+  dist/pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008.js.LEGAL.txt                                       1.4kb  100.0%
+
+[info]          Module f64b6d4f-93ec-54d3-99a4-e70c751da008 has capability: zarf-agent
+[info]          K8s resource for the module saved to /Users/cmwylie19/pepr-zarf-agent/dist/pepr-module-f64b6d4f-93ec-54d3-99a4-e70c751da008.yaml
+Building Transformer Service
+github.com/cmwylie19/pepr-zarf-agent/transformer
+[+] Building 0.6s (5/5) FINISHED                                                                                                                                                                                                                                    
+ => [internal] load build definition from Dockerfile                                                                                                                                                                                                           0.0s
+ => => transferring dockerfile: 207B                                                                                                                                                                                                                           0.0s
+ => [internal] load .dockerignore                                                                                                                                                                                                                              0.0s
+ => => transferring context: 2B                                                                                                                                                                                                                                0.0s
+ => [internal] load build context                                                                                                                                                                                                                              0.4s
+ => => transferring context: 68.47MB                                                                                                                                                                                                                           0.4s
+ => [1/1] COPY ./transformer /                                                                                                                                                                                                                                 0.0s
+ => exporting to image                                                                                                                                                                                                                                         0.1s
+ => => exporting layers                                                                                                                                                                                                                                        0.1s
+ => => writing image sha256:8187762f4336dfd8339224476459a99169ff2d71d06284890f4a6f39deb8c4e9                                                                                                                                                                   0.0s
+ => => naming to docker.io/cmwylie19/transformer:0.0.1                                                                                                                                                                                                         0.0s
+The push refers to repository [docker.io/cmwylie19/transformer]
+a6de1a6e6401: Pushed 
+0.0.1: digest: sha256:8f84b63cd10bc7212041668eafc49b61cec1e5425092ec026c0808b33de32aa9 size: 528
+Building Debugger
+[+] Building 0.1s (10/10) FINISHED                                                                                                                                                                                                                                  
+ => [internal] load .dockerignore                                                                                                                                                                                                                              0.0s
+ => => transferring context: 2B                                                                                                                                                                                                                                0.0s
+ => [internal] load build definition from Dockerfile                                                                                                                                                                                                           0.0s
+ => => transferring dockerfile: 833B                                                                                                                                                                                                                           0.0s
+ => [internal] load metadata for registry.access.redhat.com/ubi8/ubi-minimal:8.6                                                                                                                                                                               0.1s
+ => [1/6] FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6@sha256:33931dce809712888d1a8061bfa676963f517daca993984afed3251bc1fb5987                                                                                                                         0.0s
+ => CACHED [2/6] RUN microdnf install bash dnf gzip wget tar    && microdnf update     && microdnf clean all                                                                                                                                                   0.0s
+ => CACHED [3/6] RUN groupadd --gid 1000 readfile     && useradd --uid 1000 --gid 1000 -m readfile                                                                                                                                                             0.0s
+ => CACHED [4/6] RUN wget https://github.com/fullstorydev/grpcurl/releases/download/v1.8.7/grpcurl_1.8.7_linux_x86_64.tar.gz     && tar -xzf grpcurl_1.8.7_linux_x86_64.tar.gz -C /usr/bin     && rm -rf grpcurl_1.8.7_linux_x86_64.tar.gz                     0.0s
+ => CACHED [5/6] RUN dnf install openssl jq -y                                                                                                                                                                                                                 0.0s
+ => CACHED [6/6] WORKDIR /home/readfile                                                                                                                                                                                                                        0.0s
+ => exporting to image                                                                                                                                                                                                                                         0.0s
+ => => exporting layers                                                                                                                                                                                                                                        0.0s
+ => => writing image sha256:674f5224cdef3045fb0480d231f1d191a8d67daa15d9c4d69af21cfe3b1564e0                                                                                                                                                                   0.0s
+ => => naming to docker.io/cmwylie19/grpcurl-debugger:0.0.1                                                                                                                                                                                                    0.0s
+The push refers to repository [docker.io/cmwylie19/grpcurl-debugger]
+5f70bf18a086: Layer already exists 
+8cf5a074016a: Layer already exists 
+2176c7dd3482: Layer already exists 
+d1067f43d9a5: Layer already exists 
+c133ad3d8205: Layer already exists 
+ea9c42165523: Layer already exists 
+0.0.1: digest: sha256:0ef435dbd3ca2e377a46d45ce587f88084989cca5aad08267b1bdf66f6f73963 size: 1578
+Building Pepr Zarf Agent, Transformer Service, and Debugger
+```
+
 Check gRPC Server
 
 ```bash
 make check/server
+```
+
+output
+```bash
+Makefile:16: warning: overriding commands for target `build/transformer-service'
+transformer/Makefile:8: warning: ignoring old commands for target `build/transformer-service'
+Checking Server
+pod/debugger created
+Waiting for server to be ready
+pod/debugger condition met
+List gRPC Services
+grpc.reflection.v1alpha.ServerReflection
+image.defenseunicorns.com.ImageTransform
+Describe gRPC Service
+image.defenseunicorns.com.ImageTransform is a service:
+service ImageTransform {
+  rpc ImageTransformHost ( .image.defenseunicorns.com.TransformRequest ) returns ( .image.defenseunicorns.com.TransformResponse );
+  rpc ImageTransformHostWithoutChecksum ( .image.defenseunicorns.com.TransformRequest ) returns ( .image.defenseunicorns.com.TransformResponse );
+}
+Invoke gRPC Service -- ImageTransformHost
+{
+  "transformedImage": "gitlab.com/project/library/nginx:latest-zarf-3793515731"
+}
+Invoke gRPC Service -- ImageTransformHostWithoutChecksum
+{
+  "transformedImage": "gitlab.com/project/library/nginx:latest"
+}
+Delete debugger
+Warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "debugger" force deleted
 ```
 
 [TOP](#pepr-module)
