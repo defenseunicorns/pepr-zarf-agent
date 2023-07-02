@@ -13,4 +13,5 @@ spec:
     resources: {}
   dnsPolicy: ClusterFirst
   restartPolicy: Always
+  serviceAccountName: transformer
 status: {}

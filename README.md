@@ -405,7 +405,7 @@ npx prettier --write .
 
 ## Developing
 
-Build the Pepr module, Transformer Service, and Debugger
+Build the cluster, Pepr module, Transformer Service, and Debugger
 
 ```bash
 make all
@@ -413,9 +413,23 @@ make all
 
 output
 ```bash
-Makefile:16: warning: overriding commands for target `build/transformer-service'
+Makefile:18: warning: overriding commands for target `build/transformer-service'
 transformer/Makefile:8: warning: ignoring old commands for target `build/transformer-service'
 Building Pepr Zarf Agent
+Create kind cluster
+Creating cluster "pepr-zarf-agent" ...
+ ✓ Ensuring node image (kindest/node:v1.27.1) 🖼
+ ✓ Preparing nodes 📦  
+ ✓ Writing configuration 📜 
+ ✓ Starting control-plane 🕹️ 
+ ✓ Installing CNI 🔌 
+ ✓ Installing StorageClass 💾 
+Set kubectl context to "kind-pepr-zarf-agent"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-pepr-zarf-agent
+
+Have a nice day! 👋
 
   dist/pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008.js                                               580.7kb  100.0%
    ├ node_modules/google-protobuf/google-protobuf.js                                              246.7kb   42.5%
@@ -546,22 +560,21 @@ Building Pepr Zarf Agent
 [info]          Module f64b6d4f-93ec-54d3-99a4-e70c751da008 has capability: zarf-agent
 [info]          K8s resource for the module saved to /Users/cmwylie19/pepr-zarf-agent/dist/pepr-module-f64b6d4f-93ec-54d3-99a4-e70c751da008.yaml
 Building Transformer Service
-github.com/cmwylie19/pepr-zarf-agent/transformer
-[+] Building 0.6s (5/5) FINISHED                                                                                                                                                                                                                                    
- => [internal] load build definition from Dockerfile                                                                                                                                                                                                           0.0s
- => => transferring dockerfile: 207B                                                                                                                                                                                                                           0.0s
+[+] Building 0.5s (5/5) FINISHED                                                                                                                                                                                                                                    
  => [internal] load .dockerignore                                                                                                                                                                                                                              0.0s
  => => transferring context: 2B                                                                                                                                                                                                                                0.0s
- => [internal] load build context                                                                                                                                                                                                                              0.4s
- => => transferring context: 68.47MB                                                                                                                                                                                                                           0.4s
- => [1/1] COPY ./transformer /                                                                                                                                                                                                                                 0.0s
- => exporting to image                                                                                                                                                                                                                                         0.1s
- => => exporting layers                                                                                                                                                                                                                                        0.1s
- => => writing image sha256:8187762f4336dfd8339224476459a99169ff2d71d06284890f4a6f39deb8c4e9                                                                                                                                                                   0.0s
+ => [internal] load build definition from Dockerfile                                                                                                                                                                                                           0.0s
+ => => transferring dockerfile: 207B                                                                                                                                                                                                                           0.0s
+ => [internal] load build context                                                                                                                                                                                                                              0.5s
+ => => transferring context: 68.47MB                                                                                                                                                                                                                           0.5s
+ => CACHED [1/1] COPY ./transformer /                                                                                                                                                                                                                          0.0s
+ => exporting to image                                                                                                                                                                                                                                         0.0s
+ => => exporting layers                                                                                                                                                                                                                                        0.0s
+ => => writing image sha256:593e230fada59f2d94ef3f1131feec9e2348ca144a6b9007d60099980e773a44                                                                                                                                                                   0.0s
  => => naming to docker.io/cmwylie19/transformer:0.0.1                                                                                                                                                                                                         0.0s
 The push refers to repository [docker.io/cmwylie19/transformer]
-a6de1a6e6401: Pushed 
-0.0.1: digest: sha256:8f84b63cd10bc7212041668eafc49b61cec1e5425092ec026c0808b33de32aa9 size: 528
+3f0f8b13856b: Layer already exists 
+0.0.1: digest: sha256:db90be0ad5ec22bba083d51e9b199baa0fe3bfa95488c920047259d3a90a9ce6 size: 528
 Building Debugger
 [+] Building 0.1s (10/10) FINISHED                                                                                                                                                                                                                                  
  => [internal] load .dockerignore                                                                                                                                                                                                                              0.0s
@@ -587,7 +600,27 @@ d1067f43d9a5: Layer already exists
 c133ad3d8205: Layer already exists 
 ea9c42165523: Layer already exists 
 0.0.1: digest: sha256:0ef435dbd3ca2e377a46d45ce587f88084989cca5aad08267b1bdf66f6f73963 size: 1578
-Building Pepr Zarf Agent, Transformer Service, and Debugger
+```
+
+Create the dev environment:
+
+```bash
+make deploy/dev
+```
+
+_output_
+
+```bash
+Makefile:18: warning: overriding commands for target `build/transformer-service'
+transformer/Makefile:8: warning: ignoring old commands for target `build/transformer-service'
+Deploying to Dev
+namespace/pepr-system created
+serviceaccount/transformer created
+service/transformer created
+deployment.apps/transformer created
+pod/debugger created
+pod/transformer-688665775-rwq7h condition met
+pod/debugger condition met
 ```
 
 Check gRPC Server
@@ -624,6 +657,12 @@ Invoke gRPC Service -- ImageTransformHostWithoutChecksum
 Delete debugger
 Warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
 pod "debugger" force deleted
+```
+
+Clean Up
+
+```bash
+make clean
 ```
 
 [TOP](#pepr-module)

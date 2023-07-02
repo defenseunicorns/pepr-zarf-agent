@@ -9,6 +9,8 @@ include transformer/Makefile
 .PHONY: build/pepr-zarf-agent
 build/pepr-zarf-agent:
 	@echo "Building Pepr Zarf Agent"
+	@echo "Create kind cluster"
+	@kind create cluster --name=pepr-zarf-agent
 	@pepr build
 
 .PHONY: build/transformer-service
@@ -26,6 +28,9 @@ build/debugger:
 deploy/dev:
 	@echo "Deploying to Dev"
 	@kubectl create -k transformer/k8s/overlays/dev 
+	@sleep 20
+	@kubectl wait --for=condition=Ready pod -l app=transformer --timeout=60s -n pepr-system
+	@kubectl wait --for=condition=Ready pod -l run=debugger --timeout=60s -n pepr-system
 
 .PHONY: check/server
 check/server:
@@ -44,5 +49,10 @@ check/server:
 	@echo "Delete debugger"
 	@kubectl delete po debugger --force --grace-period=0
 
+.PHONY: clean
+clean:
+	@echo "Removing cluster"
+	@kind delete cluster --name=pepr-zarf-agent
+
+
 all: build/pepr-zarf-agent build/transformer-service build/debugger
-	@echo "Building Pepr Zarf Agent, Transformer Service, and Debugger"
