@@ -2,7 +2,7 @@ import { Capability, a, Log } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
 import { InitSecretsReady } from "./helpers";
-import {TransformerAPI } from "./transformer-api";
+import { TransformerAPI } from "./transformer-api";
 /**
  *  The HelloPepr Capability is an example capability to demonstrate some general concepts of Pepr.
  *  To test this capability you can run `pepr dev` or `npm start` and then run the following command:
@@ -120,8 +120,11 @@ When(a.Pod)
       }
 
       try {
-      // transform all containers in pod
-      await _transformer.transformAllContainers(pod, _initSecrets.zarfStateSecret.registryInfo.address);
+        // transform all containers in pod
+        await _transformer.transformAllContainers(
+          pod,
+          _initSecrets.zarfStateSecret.registryInfo.address
+        );
 
         // add zarf-agent label to pod to be ignored next time
         pod.SetAnnotation("zarg-agent/dev", "patched");

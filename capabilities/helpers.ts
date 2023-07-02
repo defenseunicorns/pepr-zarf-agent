@@ -1,8 +1,6 @@
 import { IInitSecret } from "./api-types";
 import { Log, PeprRequest, a } from "pepr";
 
-
-
 export function UpdateContainerImages(
   pod: PeprRequest<a.Pod>,
   address: string
@@ -171,8 +169,9 @@ export function ImageTransformHostWithoutChecksum(
   if (tag === "" && digest === "") {
     tag = "latest";
   }
-  return `${host}/${path}${tag !== "" ? ":" + tag : ""}${digest !== "" ? "@" + digest : ""
-    }`;
+  return `${host}/${path}${tag !== "" ? ":" + tag : ""}${
+    digest !== "" ? "@" + digest : ""
+  }`;
 }
 
 export function InitSecretsReady(_initSecrets: IInitSecret): boolean {

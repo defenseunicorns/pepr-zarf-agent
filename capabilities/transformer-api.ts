@@ -3,7 +3,7 @@ import { ImageTransformClient } from "./lib/images/image_grpc_pb";
 import { TransformRequest } from "./lib/images/image_pb";
 import { credentials } from "@grpc/grpc-js";
 
-const H0STNAME: string = "transformer.pepr-system.svc.cluster.local:50051"
+const H0STNAME: string = "transformer.pepr-system.svc.cluster.local:50051";
 
 export class TransformerAPI {
   client: ImageTransformClient;
@@ -15,23 +15,34 @@ export class TransformerAPI {
     );
   }
 
-  async transformAllContainers(pod: PeprRequest<a.Pod>, address: string): Promise<void> {
-
-
+  async transformAllContainers(
+    pod: PeprRequest<a.Pod>,
+    address: string
+  ): Promise<void> {
     if (pod.Raw?.spec?.initContainers !== undefined) {
-      Promise.all(pod.Raw.spec.initContainers.map(async container =>
-        await this.imageTransformHost(address, container.image)
-      ));
+      Promise.all(
+        pod.Raw.spec.initContainers.map(
+          async container =>
+            await this.imageTransformHost(address, container.image)
+        )
+      );
     }
 
     if (pod.Raw?.spec?.ephemeralContainers !== undefined) {
-      Promise.all(pod.Raw.spec.ephemeralContainers.map(async container =>
-        await this.imageTransformHost(address, container.image)
-      ));
+      Promise.all(
+        pod.Raw.spec.ephemeralContainers.map(
+          async container =>
+            await this.imageTransformHost(address, container.image)
+        )
+      );
     }
     if (pod.Raw?.spec?.containers !== undefined) {
-      Promise.all(pod.Raw.spec.containers.map(async container => await this.imageTransformHost(address, container.image)))
-
+      Promise.all(
+        pod.Raw.spec.containers.map(
+          async container =>
+            await this.imageTransformHost(address, container.image)
+        )
+      );
     }
   }
 
