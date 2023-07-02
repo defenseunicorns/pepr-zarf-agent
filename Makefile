@@ -28,7 +28,7 @@ build/debugger:
 deploy/dev:
 	@echo "Deploying to Dev"
 	@kubectl create -k transformer/k8s/overlays/dev 
-	@sleep 20
+	@sleep 5
 	@kubectl wait --for=condition=Ready pod -l app=transformer --timeout=60s -n pepr-system
 	@kubectl wait --for=condition=Ready pod -l run=debugger --timeout=60s -n pepr-system
 

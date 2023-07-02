@@ -4,9 +4,7 @@ import { InitSecrets } from "./secrets/initSecrets";
 import { InitSecretsReady } from "./helpers";
 import { TransformerAPI } from "./transformer-api";
 /**
- *  The HelloPepr Capability is an example capability to demonstrate some general concepts of Pepr.
- *  To test this capability you can run `pepr dev` or `npm start` and then run the following command:
- *  `kubectl apply -f capabilities/hello-pepr.samples.yaml`
+ *  The ZarfAgent capability handles pod mutations for Zarf.
  */
 export const ZarfAgent = new Capability({
   name: "zarf-agent",
@@ -80,29 +78,7 @@ When(a.Pod)
       Log.info("Pod has ignore labels. Skipping.");
     } else {
       Log.info("Pod does not have ignore labels. Continuing.");
-      // Helm PostRenderer creates this secret
-      // Uncomment for testing w/out Zarf
-      // let newSecret = {
-      //   ".dockerconfigjson":
-      //     _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
-      // };
 
-      // try {
-      //   // create imagePullSecret in pod namespace
-      //   await _initSecrets.k8sApi.createOrUpdateSecret(
-      //     _initSecrets.privateRegistrySecretName,
-      //     pod.Raw?.metadata?.namespace,
-      //     newSecret
-      //   );
-      //   Log.info(
-      //     "imagePullSecret secret created in " +
-      //       pod.Raw?.metadata?.namespace +
-      //       " namespace. "
-      //   );
-      // } catch (err) {
-      //   Log.error("Could not create imagePullSecret in pod namespace", err);
-      // }
-      // Add imagePullSecret to Pod
       try {
         // check if imagePullSecrets exist
         if (
