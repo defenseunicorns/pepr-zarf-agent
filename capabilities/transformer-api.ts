@@ -52,14 +52,19 @@ export class TransformerAPI {
     await Promise.all(
       pod.Raw.spec.containers.map(async container => {
         try {
-          container.image = await this.imageTransformHost(address, container.image);
-          Log.info("Transformed image: " + JSON.stringify(pod.Raw.spec.containers, undefined, 2));
+          container.image = await this.imageTransformHost(
+            address,
+            container.image
+          );
+          Log.info(
+            "Transformed image: " +
+              JSON.stringify(pod.Raw.spec.containers, undefined, 2)
+          );
         } catch (err) {
           Log.error("Error calling imageTransformHost", err.toString());
         }
       })
     );
-
   }
 
   async imageTransformHost(
