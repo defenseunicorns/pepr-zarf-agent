@@ -1,7 +1,11 @@
 # Pepr Module
 
-High Level Overview Demo
+- [Demo](#demo)
+- [High Level Overview](#high-level-overview)
+- [Contributing](#contributing)
 
+
+## Demo 
 You must be running a k3d cluster. `k3d cluster create`  
 
 ```bash
@@ -69,9 +73,6 @@ output (See Zarf's transform mutate the pod in WASM)
 
 
 
-- [High Level Overview](#high-level-overview)
-- [Contributing](#contributing)
-- [Developing](#developing)
 
 ## High Level Overview
 
