@@ -1,0 +1,202 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pepr-system
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+  namespace: pepr-system
+spec:
+  podSelector:
+    matchLabels:
+      app: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 443
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+subjects:
+  - kind: ServiceAccount
+    name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+    namespace: pepr-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+  namespace: pepr-system
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008-tls
+  namespace: pepr-system
+type: kubernetes.io/tls
+data:
+  tls.crt: >-
+    LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlDd3pDQ0FhdWdBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBQU1CNFhEVEl6TURjeU5ESXdNamt6DQpNMW9YRFRJME1EY3lOREl3TWprek0xb3dBRENDQVNJd0RRWUpLb1pJaHZjTkFRRUJCUUFEZ2dFUEFEQ0NBUW9DDQpnZ0VCQU9QNEdCWWxMTk01N2JRck5zNjRxeUErQStTSTk2MVpyYkh6aGxMdGRQZFhuY0daUXZBVXRkTVp1N2VODQpWUWJBN2xjeXZMa3ZuQkhrWkNrOW9oNkdtMEZteXQwUjN4bTd4WWYxNGhSRmtrWksrR3YzNkpkdklBaW84cnp1DQpRT1VrTUsyT2NtSjlzS0FDTlcxUVhRNW9WbGxyWGdPVlcxTDdLb1dSa0lzZHZyUHB4QzBFbVNna0ZaT3VWYlRYDQprUUV3MUdXRWx3aU1tYVZLNjk0dGhvbWpLU2dLeWJleHVNT24wenRma08vcEVjdHVsK0VaRitySm1KWW5Ra2hQDQpCTWhpRTdTbTN6K0pyTHBZK3M4L1dMeXVsZDl3U3c1a0hMSkwzZ3lJVEsvdkFDMnhhaWIvYmhUdzI2dmY1VTlyDQpDQW9MY1NFR0RIdm1qcDZ3dGhHYnlidlFONlVDQXdFQUFhTklNRVl3UkFZRFZSMFJCRDB3TzRJNWNHVndjaTFtDQpOalJpTm1RMFppMDVNMlZqTFRVMFpETXRPVGxoTkMxbE56QmpOelV4WkdFd01EZ3VjR1Z3Y2kxemVYTjBaVzB1DQpjM1pqTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFCN0c3SEhZZUlmc0FrUlNsSWhOQXlicGNpam81dEl4a1hTDQpZcDZmNkxmR1dUQmIrU2pKbDlEc1ZGb3VMakZtazZJT0lXUEtYbGtXbkt4a3RMVXJmQmpLdkFPWlYwdTJIU0NnDQp3Wmt6T2hXLzVBNXJOTnRBNWwrZUk1d2hrdTRZZnI1blNWVlVGZVRIMWRUSXhWYkhxOTZsK3N5TXhSM3R2MkthDQpTQWJsZVRoLzUrcnc0TGZOUHVOZmt2WEZzYkl0VTRNRXZ6NWZkRzQ1cU9HR0ltdTFCSnNVWkVCOS9RRUVWL1VTDQo0RGVVa3Z4dWRpam1uTGJ1U2NEREtQb3MwUkluQXZnTnpRTVRYalQrOHJIUGtGYlFEZE1NTmU4bFphL1kzN0VHDQpsVGJpRnhPRVlvWmRJL3NrdmtEaGxhYjBsV2dwNm1ObzZWeTBHMk41OWUwSVdZRG04Qjl5DQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tDQo=
+  tls.key: >-
+    LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQ0KTUlJRXBBSUJBQUtDQVFFQTQvZ1lGaVVzMHpudHRDczJ6cmlySUQ0RDVJajNyVm10c2ZPR1V1MTA5MWVkd1psQw0KOEJTMTB4bTd0NDFWQnNEdVZ6Szh1UytjRWVSa0tUMmlIb2FiUVdiSzNSSGZHYnZGaC9YaUZFV1NSa3I0YS9mbw0KbDI4Z0NLanl2TzVBNVNRd3JZNXlZbjJ3b0FJMWJWQmREbWhXV1d0ZUE1VmJVdnNxaFpHUWl4MitzK25FTFFTWg0KS0NRVms2NVZ0TmVSQVREVVpZU1hDSXlacFVycjNpMkdpYU1wS0FySnQ3RzR3NmZUTzErUTcra1J5MjZYNFJrWA0KNnNtWWxpZENTRThFeUdJVHRLYmZQNG1zdWxqNnp6OVl2SzZWMzNCTERtUWNza3ZlREloTXIrOEFMYkZxSnY5dQ0KRlBEYnE5L2xUMnNJQ2d0eElRWU1lK2FPbnJDMkVadkp1OUEzcFFJREFRQUJBb0lCQUFwT2hqQkNJQU93dzhsNA0KaHJMVDhKQzFuUkZ4QzltZmkxWFhUOFJpRGY2OHpGb2Jac1paK1ZxQStGYTFJaG43RVF1S05MUWVyZXkxS2I0Zg0KbGp2UkZDWGgwdHdwMmE5ZEtQSWJzTXYvMVR3dVdZcndHMmoxVWpweUFQOS91aGxpQ0gxZ1NsV2ZueU9zMWVPSw0KVlpxNEp1ZEdEbXNWRHByeTFocFIyWG9ncnlXTkh6M0JXd3NHYUpuN2FvdFZBL2g1TmtuSVh1V3dLK24rd2p3ZQ0KdFlBWldsMkIvY29lMXRGcDBYTXlzcjZlT1NXOXF2MW1leDRQeXFOdE9oWFJsNGc1eG5iRUZBUXlaYTl5YkZDZw0KbmZoZnB0ZVBQaUREQXlLY0Fyemk3RXdMUGNvR3hubmcyMGVXR1VLSml1TDRkLzBsMkM5WDFNVVZIaDFLbGgwaQ0KMEJEK1hRVUNnWUVBL1kwaW9tRjA2aVBFcEdMcWVLOURxSE1IeDBpRGV2M1lybG1NMC9iT0MxZ09kRnFFUURobw0KSXpNSk83YitRUE16czRsWXBBSHlXL1MrZ2kvVWIzWEFBSHRKQS9pTUJXbyt0bkR4VzRwTGhPSWdBOTR2N243MQ0KQ1BWbEhyQTlWbklCM2NnZEdZd0lUcFZGSG5EOUc3UlZvelNKSFJDVnhFNFY0c3BjNGZwaFlFTUNnWUVBNWl1Mg0KQVJ4d2VmQ2xUajRCaTU3T1F1NEdOcVZyTjRYSGFPYWI1RnNlSzNtNmp1VmYyTVZBL3RPMUhoS1BGSldoNXhvRg0Kc3pGc2VVT0JWSEJKdk5LbVZlQ1dqWlMyMFE2YVZMR0RQdHhkeHdPRzZNRC9EZFZwTkpId2lMaDBhNnp5KzRKeg0KbzdsdWtiTHExUDV6NDJIb0pXMy9wYVJaUFlraXNpQUc1cnhNWGZjQ2dZRUFwTmpLNk1uMkNuaUEwK1BmeitFYg0KV3Z5VzFSRW5NcUt4NndFYjEzL0NESXdPc2NWYjhLajd3ODdkdE81UHRnaW8xNVIzaGdJaUFYbEpGemxqbzZmcA0KMGlaVm5YaE9DUU0vakx3M242MTFWZ3J5aDdGQWRvNGlYOVcwRGRURnZGdFpMVWw2NmU0cVJIVTJRQWx6OWp3eg0KNVcwMXJDanBSbjBDSzdZbjEyQkRTU01DZ1lFQWtMQzlzeWtiazZ3eFhtUWdPSkxWK3NFQ2F1dkY0SnRhWlpsQw0KT21VRkxETlRrV3lqdWZNV0Rwc3JhZ0lrcTczOGp2aU95THl6QWUvcnB4Y0hZNG5RUW4veVpJSXVBbkY1bHZBWQ0KSHpZTVJZVDBFL0R1NU5WWlUxRENzayt4NzlaQzBOU0t1VXRpTkhrU29sNXFuMi8yclVEZXlsUHNQWUN0ck9meA0KTHE4RUdyVUNnWUJMbnNvZS9MUGJSakFHUHpIakJCU3hnaWRXZXBBTSsrTktpVTlGdGtCT2hLbkN0VlRGTGRLaw0KYVdLbThHaEYzbkJZSG9jQVJRY0RWUFU5SFJvRDlyb0syQlFEa2VKQ282NmlQWDAzNmU5anAybmc4QlJPaXNxMg0KZXp2ak1RVGVaT3Z1dmJld1Q2RjNvUjZQS1BUcHE2bE4xQTRoSkNlME1OZHErNkpVNTRjSzlRPT0NCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tDQo=
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+webhooks:
+  - name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008.pepr.dev
+    admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      caBundle: >-
+        LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlDdERDQ0FaeWdBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBY01Sb3dHQVlEVlFRREV4RlFaWEJ5DQpJRVZ3YUdWdFpYSmhiQ0JEUVRBZUZ3MHlNekEzTWpReU1ESTVNek5hRncweU5EQTNNalF5TURJNU16TmFNQUF3DQpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDMm55RkNhYjgxM0p1VDhpVlhTUGo4DQppdHU1a0dNelhEcWVCakVvQUFJWW45WUlFcDdZcDZ1elV5ZzEyeXFLV0hadkpLVU0zNzRVUHFLNjJlM1FGNXBCDQp3aU1NdnZGK2E3aS9Pak9wVkxLV1pUcE16L2JRUTQ1Zyt1a0hNeTkyMHhBa1ZEYkZZMnJWbFR1blcxbHlEbXl5DQovaFpNUDl3Zy9xRG1jRUZqN0MxNktYcS9xdjBBUFdsTmIrcEw0cGtDSlFsaEdzTXZsOVgrY2U4NjNSTnI3VHF1DQp3WGVJM3ZaNk9JbWF4REtjL2gzTHRuZlEraUpEMnVSTW8xMVZVUWFvQTdGb3JFNGlZWWs1TC81c2JHZ09LaXJVDQpuMmgrQ2RoaFRaRFFLNTNYS1BwOGpuWUFZdG14NEF3ZkllRDNYSTkzU3llLzFoL0cvQzhUYWNLV1dEbzM1Tk5oDQpBZ01CQUFHakhUQWJNQXdHQTFVZEV3UUZNQU1CQWY4d0N3WURWUjBQQkFRREFnTDBNQTBHQ1NxR1NJYjNEUUVCDQpDd1VBQTRJQkFRQ0tKUDJEUnBQQjBNRWtMbVVSQzJjcWlHdzcvbmErKzlnTmVsc3ltZkNtUjJPQWxNakVKK21RDQpXTFZLUFpVQnVCeWJpNXdqUkRGNm9KU0RiUlZkRFU3UERRdEM5cmFLSlQ5U3lpOTUvZkF2R00vM1lvZ1dDbmIyDQpCbjRDNVZhbThucVdqZm9LS01NZTBNVzRjRVEwaHpCeUwwdEJOLzVvUWVoVCtKaGxCa0w1RzJrcGx1TktkZnZiDQpqZ2lOeVJpdUlhYmhobjA0T2xBcks0bHFzVExxcTlDNE1MU2NvN2ZzN05CQnlkQVFKc0hlc2VmK0pPaXdVWUlDDQphMWxOeE9haW8yR0FSZTZFSXFLVmpjNUswZ2V6VG04NmhBME9yK1gwZFlBeS81ZnV2UnpsUFFRWWowRGxZNHlYDQpTU25DZkNFSEppc1owT0lwUUtSeWJ5Wm8yLytNY0VhVA0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ0K
+      service:
+        name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+        namespace: pepr-system
+        path: /mutate
+    failurePolicy: Ignore
+    matchPolicy: Equivalent
+    timeoutSeconds: 10
+    namespaceSelector:
+      matchExpressions:
+        - key: pepr.dev
+          operator: NotIn
+          values:
+            - ignore
+    objectSelector:
+      matchExpressions:
+        - key: pepr.dev
+          operator: NotIn
+          values:
+            - ignore
+    rules:
+      - apiGroups:
+          - ''
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+        resources:
+          - configmaps
+      - apiGroups:
+          - ''
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - pods
+    sideEffects: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+  namespace: pepr-system
+  labels:
+    app: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+  template:
+    metadata:
+      labels:
+        app: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+    spec:
+      priorityClassName: system-node-critical
+      serviceAccountName: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+      containers:
+        - name: server
+          image: ghcr.io/defenseunicorns/pepr/controller:v0.7.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - node
+            - /app/node_modules/pepr/dist/controller.js
+            - a49e2fdf39b056319c2ef68130d71edb6431415cd05d883d4d9a1fc01a1106d7
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+              scheme: HTTPS
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 500m
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /etc/certs
+              readOnly: true
+            - name: module
+              mountPath: /app/load
+              readOnly: true
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008-tls
+        - name: module
+          secret:
+            secretName: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008-module
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+  namespace: pepr-system
+spec:
+  selector:
+    app: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+  ports:
+    - port: 443
+      targetPort: 3000
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008-module
+  namespace: pepr-system
+type: Opaque
+data:
+  module-a49e2fdf39b056319c2ef68130d71edb6431415cd05d883d4d9a1fc01a1106d7.js.gz: >-
+    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
