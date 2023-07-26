@@ -3,7 +3,7 @@ import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
 import { InitSecretsReady } from "./helpers";
 import { TransformerAPI } from "./transformer-api";
-import { log } from "@grpc/grpc-js/build/src/logging";
+
 /**
  *  The ZarfAgent capability handles pod mutations for Zarf.
  */
@@ -22,6 +22,11 @@ const { When } = ZarfAgent;
  */
 const _initSecrets = new InitSecrets(new K8sAPI());
 const _transformer = new TransformerAPI();
+// Initialize TransformerAPI
+(async ()=>{
+  await _transformer.run();
+})()
+
 
 /**
  * ---------------------------------------------------------------------------------------------------
@@ -75,7 +80,6 @@ When(a.Pod)
       }
     }
     try {
-      await _transformer.run();
       // Parse output of transformPod to replace pod.Raw
       pod.Raw = JSON.parse(
         _transformer.transformPod(

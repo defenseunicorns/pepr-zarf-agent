@@ -1,6 +1,7 @@
-import { Log, PeprRequest, a } from "pepr";
+import { Log, a } from "pepr";
 import { readFileSync } from "fs";
 import "./wasm_exec.js";
+import { Request } from "./api-types.js";
 
 export class TransformerAPI {
   private go: any;
@@ -40,8 +41,8 @@ export class TransformerAPI {
     }
   }
   transformPod(
-    pod: any,
-    request: any,
+    pod: a.Pod,
+    request: Request,
     imagePullSecretName: string,
     targetHost: string
   ): string {

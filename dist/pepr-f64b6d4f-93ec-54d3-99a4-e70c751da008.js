@@ -913,6 +913,9 @@ var ZarfAgent = new import_pepr6.Capability({
 var { When } = ZarfAgent;
 var _initSecrets = new InitSecrets(new K8sAPI());
 var _transformer = new TransformerAPI();
+(async () => {
+  await _transformer.run();
+})();
 When(import_pepr6.a.ConfigMap).IsCreated().Then(() => {
   try {
     import_pepr6.Log.info(
@@ -947,7 +950,6 @@ When(import_pepr6.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
     }
   }
   try {
-    await _transformer.run();
     pod.Raw = JSON.parse(
       _transformer.transformPod(
         pod.Raw,
