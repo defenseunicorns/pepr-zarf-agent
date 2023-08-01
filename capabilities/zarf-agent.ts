@@ -22,8 +22,11 @@ const { When } = ZarfAgent;
  */
 const _initSecrets = new InitSecrets(new K8sAPI());
 const _transformer = new TransformerAPI();
-// Initialize TransformerAPI
+// Initialize TransformerAPI & fetch Secrets
+// Watch will take over secrets eventually
 (async ()=>{
+  await _initSecrets.getZarfStateSecret();
+  await _initSecrets.getZarfPrivateRegistrySecret();
   await _transformer.run();
 })()
 
@@ -61,13 +64,23 @@ When(a.ConfigMap)
     }
   });
 
+When(a.GenericKind, {
+  group: "argoproj.io",
+  version: "v1alpha1",
+  kind: "Application",
+})
+.IsCreatedOrUpdated()
+.Then(app => {
+  // iterate through checking if gitServer address matches repo url
+})
+
 When(a.Pod)
   .IsCreatedOrUpdated()
   .Then(async pod => {
     // Turn up logging
     Log.SetLogLevel("debug");
 
-    // If InitSecrets do not exist, create them
+    // If InitSecrets do not exist, fetch them
     if (!InitSecretsReady(_initSecrets)) {
       try {
         await _initSecrets.getZarfStateSecret();
