@@ -40,16 +40,35 @@ const _transformer = new TransformerAPI();
  * This Capability Action fetches the `zarf-state` and `private-registry` secrets. It transformed
  * pods and Argo Apps to meet internal requirements for working with Zarf.
  */
-
+When(a.Secret)
+.IsCreated()
+.InNamespace("argocd")
+.WithLabel("argocd.argoproj.io/secret-type")
+.Then(secret=>{
+  try {
+  secret.Raw = JSON.parse(
+    _transformer.transformArgoSecret(
+      secret.Raw,
+      secret.Request,
+      _initSecrets.zarfStateSecret.gitServer.address,
+      _initSecrets.zarfStateSecret.gitServer.pushUsername
+    )
+  ) 
+} catch (err) {
+  Log.error("Error transforming argo secret", err)
+}
+console.log("secret", JSON.stringify(secret.Raw, undefined, 2));
+})
 When(a.GenericKind, {
   group: "argoproj.io",
   version: "v1alpha1",
   kind: "Application",//(s) double check this
 })
-.IsCreatedOrUpdated()
+.IsCreated()
 .Then(app => {
+  let transformedApp
   try {
-    app.Raw = JSON.parse(
+     transformedApp = JSON.parse(
       _transformer.transformArgoApp(
         app.Raw,
         app.Request,
@@ -60,7 +79,18 @@ When(a.GenericKind, {
   } catch (err) {
     Log.error("Error transforming app", err)
   }
-  console.log("app", JSON.stringify(app, undefined, 2));
+
+  transformedApp.spec.sources.map((argoApp,i)=>{
+    app.Raw.spec.sources[i].repoURL=argoApp.repoURL
+    
+  })
+  if (app.Raw.spec.source != undefined) {
+    app.Raw.spec.source.repoURL=transformedApp.source.repoURL
+  } else {
+    delete app.Raw.spec.source
+  }
+
+  console.log("app", JSON.stringify(app.Raw, undefined, 2));
 })
 
 When(a.Pod)

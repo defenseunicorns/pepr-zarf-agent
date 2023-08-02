@@ -6,25 +6,44 @@ import (
 	"log"
 	"syscall/js"
 
+	// appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+
 	// appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/defenseunicorns/zarf/src/pkg/transform"
 )
 
 const AgentErrImageSwap = "Unable to swap the host for (%s)"
 const RepoURLHostSwap = "Unable to swap repoURL for (%s)"
+const ArgoSecretSwap = "Unable to swap argo secret (%s)"
 
 type Source struct {
 	RepoURL string `json:"repoURL"`
 }
 
+type Spec struct {
+	Source  Source   `json:"source"`
+	Sources []Source `json:"sources"`
+}
 type ArgoApplication struct {
-	Spec struct {
-		Source  Source   `json:"source"`
-		Sources []Source `json:"sources"`
-	}
+	Spec Spec `json:"spec"`
 }
 
+func argoSecretTransform(this js.Value, args []js.Value) interface{} {
+
+	// Get arguments from Pepr
+	rawRequest := args[0].String()
+	// admissionRequest := args[1].String()
+	targetHost := args[2].String()
+	pushUsername := args[3].String()
+
+	transformedSecret, err := transform.GitURL(targetHost, rawRequest, pushUsername)
+	if err != nil {
+		fmt.Printf(ArgoSecretSwap, err)
+		return err
+	}
+	return transformedSecret
+}
 func repoURLTransform(this js.Value, args []js.Value) interface{} {
 
 	// Get arguments from Pepr
@@ -33,8 +52,8 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 	targetHost := args[2].String()
 	pushUsername := args[3].String()
 
+	// app := &appv1.Application{}
 	app := &ArgoApplication{}
-
 	// Define a variable to hold the parsed JSON data
 	var data map[string]interface{}
 
@@ -55,25 +74,36 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 		fmt.Println("Error unmarshalling app", err)
 	}
 
-	// // don't do anything if pod has ignore labels
-	// if checkIgnoreLabels(pod) {
-	// 	fmt.Println("Pod has ignore labels, ignoring")
-	// 	return nil
+	err = transformAppRepoURLs(app, targetHost, pushUsername)
+	if err != nil {
+		return err
+	}
+	// // Marshal transformed app back into bytes
+	// appBytes, err = json.Marshal(app)
+	// if err != nil {
+	// 	fmt.Println("Error unmarshalling app", err)
+	// 	return err
 	// }
 
-	transformAppRepoURLs(app, targetHost, pushUsername)
-	// addPatchedLabel(pod)
+	// // Create a map to hold the decoded data
+	// var transformedAppMap map[string]interface{}
 
-	// fmt.Printf("%s\n", pod.Name)
-	fmt.Printf("App\n%+v", app)
+	// // Unmarshal the JSON data into the map
+	// err = json.Unmarshal(appBytes, &transformedAppMap)
+	// if err != nil {
+	// 	fmt.Println("Error unmarshalling appBytes into transformedAppMap", err)
+	// 	return err
+	// }
 
-	// PrettyPrint
-	// Create an empty interface to unmarshal the JSON string
-	// Marshal the Pod object into a pretty printed JSON string
+	// // overwrite original map with transformedAppMap
+	// transformedMap := helpers.MergeMapRecursive(data, transformedAppMap)
+	// // PrettyPrint
+	// // Create an empty interface to unmarshal the JSON string
+	// // Marshal the Pod object into a pretty printed JSON string
 	appBytes, err = json.MarshalIndent(app, "", "  ")
 	if err != nil {
 		fmt.Println("Error:", err)
-		return nil
+		return err
 	}
 
 	// Convert the JSON bytes to a string
@@ -108,6 +138,7 @@ func podTransform(this js.Value, args []js.Value) interface{} {
 	err = json.Unmarshal(podBytes, pod)
 	if err != nil {
 		fmt.Println("Error unmarshalling pod", err)
+		return err
 	}
 
 	// don't do anything if pod has ignore labels
@@ -119,9 +150,6 @@ func podTransform(this js.Value, args []js.Value) interface{} {
 	addImagePullSecret(pod, imagePullSecretName)
 	transformContainerImages(pod, targetHost)
 	addPatchedLabel(pod)
-
-	// fmt.Printf("%s\n", pod.Name)
-	fmt.Printf("POD\n%+v", pod)
 
 	// PrettyPrint
 	// Create an empty interface to unmarshal the JSON string
@@ -153,31 +181,28 @@ func addImagePullSecret(pod *corev1.Pod, imagePullSecretName string) {
 		Name: imagePullSecretName,
 	})
 }
-func transformAppRepoURLs(app *ArgoApplication, targetHost string, pushUsername string) {
+func transformAppRepoURLs(app *ArgoApplication, targetHost string, pushUsername string) error {
 	// update repoURL for each source
 	for idx, source := range app.Spec.Sources {
-		fmt.Printf("\nsources\ntargetHost %s\npatchedURL %s\nusername %s\n", targetHost, source.RepoURL, pushUsername)
 		// GitTransformHost transform.GitURL(zarfState.GitServer.Address, patchedURL, zarfState.GitServer.PushUsername)
 		replacement, err := transform.GitURL(targetHost, source.RepoURL, pushUsername)
-		fmt.Printf("URL %s", replacement.String())
 		if err != nil {
 			fmt.Printf(RepoURLHostSwap, err)
 			continue // Continue, because we might as well attempt to mutate the other Sources for this App
 		}
-		fmt.Println("URL ---- ", replacement.String())
 		app.Spec.Sources[idx].RepoURL = fmt.Sprintf("%s", replacement.String())
 	}
 
-	if app.Spec.Source != (Source{}) {
-		fmt.Printf("\nsource\ntargetHost %s\npatchedURL %s\nusername %s\n", targetHost, app.Spec.Source.RepoURL, pushUsername)
+	if app.Spec.Source.RepoURL != "" {
 		// update repoURL for source
 		replacement, err := transform.GitURL(targetHost, app.Spec.Source.RepoURL, pushUsername)
 		if err != nil {
 			fmt.Printf(RepoURLHostSwap, err)
+			return err
 		}
-		fmt.Printf("URL ---- ", replacement.String())
 		app.Spec.Source.RepoURL = fmt.Sprintf("%s", replacement.String())
 	}
+	return nil
 }
 func transformContainerImages(pod *corev1.Pod, targetHost string) {
 	// update the image host for each init container
@@ -208,9 +233,7 @@ func transformContainerImages(pod *corev1.Pod, targetHost string) {
 			fmt.Printf(AgentErrImageSwap, err)
 			continue // Continue, because we might as well attempt to mutate the other containers for this pod
 		}
-		fmt.Println("replacement", replacement)
 		pod.Spec.Containers[idx].Image = replacement
-		fmt.Println(pod.Spec.Containers[idx].Image)
 	}
 }
 func main() {
@@ -220,5 +243,6 @@ func main() {
 	module := js.Global().Get("zarfTransform")
 	module.Set("podTransform", js.FuncOf(podTransform))
 	module.Set("repoURLTransform", js.FuncOf(repoURLTransform))
+	module.Set("argoSecretTransform", js.FuncOf(argoSecretTransform))
 	<-done
 }

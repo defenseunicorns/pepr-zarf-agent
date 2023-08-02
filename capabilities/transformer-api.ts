@@ -6,7 +6,20 @@ import { Request } from "./api-types.js";
 export class TransformerAPI {
   private go: any;
   private instance: WebAssembly.Instance;
-
+  mutateArgoSecret(
+    secret: string,
+    request: string,
+    targetHost: string,
+    pushUsername: string
+  ): string {
+      // @ts-ignore
+      return zarfTransform.argoSecretTransform(
+        secret,
+        request,
+        targetHost,
+        pushUsername
+      )
+      }   
   mutateArgoApp(
     app: string,
     request: string,
@@ -53,6 +66,28 @@ export class TransformerAPI {
       Log.error("Error instantiating wasm module", err.toString());
       return;
     }
+  }
+  transformArgoSecret(
+    secret: a.Secret,
+    request: Request,
+    targetHost: string,
+    pushUsername: string
+  ): string {
+    let transformedSecret: string;
+    if (!this.instance) {
+      throw new Error("WebAssembly module not loaded or initialized.");
+    }
+    try {
+      transformedSecret = this.mutateArgoSecret(
+        JSON.stringify(secret),
+        JSON.stringify(request),
+        targetHost,
+        pushUsername
+      );
+    } catch (err) {
+      Log.error("Error calling repoURLTransform", err);
+    }
+    return transformedSecret;
   }
   transformArgoApp(
     app: a.GenericKind,

@@ -809,6 +809,14 @@ var import_fs = require("fs");
 var TransformerAPI = class {
   go;
   instance;
+  mutateArgoSecret(secret, request, targetHost, pushUsername) {
+    return zarfTransform.argoSecretTransform(
+      secret,
+      request,
+      targetHost,
+      pushUsername
+    );
+  }
   mutateArgoApp(app, request, targetHost, pushUsername) {
     return zarfTransform.repoURLTransform(
       app,
@@ -842,6 +850,23 @@ var TransformerAPI = class {
       import_pepr4.Log.error("Error instantiating wasm module", err.toString());
       return;
     }
+  }
+  transformArgoSecret(secret, request, targetHost, pushUsername) {
+    let transformedSecret;
+    if (!this.instance) {
+      throw new Error("WebAssembly module not loaded or initialized.");
+    }
+    try {
+      transformedSecret = this.mutateArgoSecret(
+        JSON.stringify(secret),
+        JSON.stringify(request),
+        targetHost,
+        pushUsername
+      );
+    } catch (err) {
+      import_pepr4.Log.error("Error calling repoURLTransform", err);
+    }
+    return transformedSecret;
   }
   transformArgoApp(app, request, targetHost, pushUsername) {
     let transformedApp;
@@ -896,14 +921,30 @@ var _transformer = new TransformerAPI();
   await _initSecrets.getZarfPrivateRegistrySecret();
   await _transformer.run();
 })();
+When(import_pepr5.a.Secret).IsCreated().InNamespace("argocd").WithLabel("argocd.argoproj.io/secret-type").Then((secret) => {
+  try {
+    secret.Raw = JSON.parse(
+      _transformer.transformArgoSecret(
+        secret.Raw,
+        secret.Request,
+        _initSecrets.zarfStateSecret.gitServer.address,
+        _initSecrets.zarfStateSecret.gitServer.pushUsername
+      )
+    );
+  } catch (err) {
+    import_pepr5.Log.error("Error transforming argo secret", err);
+  }
+  console.log("secret", JSON.stringify(secret.Raw, void 0, 2));
+});
 When(import_pepr5.a.GenericKind, {
   group: "argoproj.io",
   version: "v1alpha1",
   kind: "Application"
   //(s) double check this
-}).IsCreatedOrUpdated().Then((app) => {
+}).IsCreated().Then((app) => {
+  let transformedApp;
   try {
-    app.Raw = JSON.parse(
+    transformedApp = JSON.parse(
       _transformer.transformArgoApp(
         app.Raw,
         app.Request,
@@ -914,7 +955,15 @@ When(import_pepr5.a.GenericKind, {
   } catch (err) {
     import_pepr5.Log.error("Error transforming app", err);
   }
-  console.log("app", JSON.stringify(app, void 0, 2));
+  transformedApp.spec.sources.map((argoApp, i) => {
+    app.Raw.spec.sources[i].repoURL = argoApp.repoURL;
+  });
+  if (app.Raw.spec.source != void 0) {
+    app.Raw.spec.source.repoURL = transformedApp.source.repoURL;
+  } else {
+    delete app.Raw.spec.source;
+  }
+  console.log("app", JSON.stringify(app.Raw, void 0, 2));
 });
 When(import_pepr5.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
   try {
