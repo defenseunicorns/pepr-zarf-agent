@@ -81,33 +81,4 @@ export class InitSecrets {
     return;
   }
 
-  // async buildAuthserviceSecret() {
-  //   const missionSecrets = await this.k8sApi.getSecretsByPattern(
-  //     "mission-",
-  //     "authservice"
-  //   );
-  //   if (missionSecrets.length == 0) {
-  //     return;
-  //   }
-  //   const authserviceConfig = await this.getAuthServiceSecret();
-
-  //   authserviceConfig.chains = missionSecrets.map(secret => {
-  //     const name = this.decodeBase64(secret, "name");
-  //     const domain = this.decodeBase64(secret, "domain");
-  //     const id = this.decodeBase64(secret, "id");
-  //     return AuthserviceConfig.createSingleChain({
-  //       id,
-  //       name,
-  //       hostname: `${name}.${domain}`,
-  //       redirect_uri: this.decodeBase64(secret, "redirect_uri"),
-  //       secret: this.decodeBase64(secret, "secret"),
-  //     });
-  //   });
-
-  //   await this.k8sApi.createOrUpdateSecret(
-  //     this.authServiceNamespace,
-  //     this.authServiceSecretName,
-  //     { [this.authServiceConfigFileName]: JSON.stringify(authserviceConfig) }
-  //   );
-  // }
 }

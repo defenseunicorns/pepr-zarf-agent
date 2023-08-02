@@ -1,8 +1,8 @@
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/defenseunicorns/zarf v0.28.2 h1:tCHX/jBAL7pofi0jX087NyuMBu9nUYUdpGif/KIzgXY=
-github.com/defenseunicorns/zarf v0.28.2/go.mod h1:3puFY46pOx7I/oYBtRV8qOcrEgwaFdzLr22NoB/khmU=
+github.com/defenseunicorns/zarf v0.28.3 h1:a80epL6PF3hNrCooidNmiDrZnuUUId2YP0nQwwiPDTc=
+github.com/defenseunicorns/zarf v0.28.3/go.mod h1:3puFY46pOx7I/oYBtRV8qOcrEgwaFdzLr22NoB/khmU=
 github.com/distribution/distribution v2.8.2+incompatible h1:k9+4DKdOG+quPFZXT/mUsiQrGu9vYCp+dXpuPkuqhk8=
 github.com/distribution/distribution v2.8.2+incompatible/go.mod h1:EgLm2NgWtdKgzF9NpMzUKgzmR7AMmb0VQi2B+ZzDRjc=
 github.com/docker/distribution v2.8.2+incompatible h1:T3de5rq0dB1j30rp0sA2rER+m322EBzniBPB6ZIzuh8=

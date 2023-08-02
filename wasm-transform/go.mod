@@ -2,10 +2,10 @@ module github.com/cmwylie19/pepr-zarf-agent/wasm-transform
 
 go 1.20
 
-replace github.com/defenseunicorns/zarf v0.28.1 => github.com/cmwylie19/zarf v0.28.3
+// replace github.com/defenseunicorns/zarf v0.28.1 => github.com/cmwylie19/zarf v0.28.3
 
 require (
-	github.com/defenseunicorns/zarf v0.28.2
+	github.com/defenseunicorns/zarf v0.28.3
 	k8s.io/api v0.27.3
 )
 
