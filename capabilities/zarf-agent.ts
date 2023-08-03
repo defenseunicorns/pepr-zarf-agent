@@ -24,7 +24,7 @@ const _initSecrets = new InitSecrets(new K8sAPI());
 const _transformer = new TransformerAPI();
 // Initialize TransformerAPI & fetch Secrets
 // Watch will take over secrets eventually
-(async ()=>{
+(async () => {
   Log.SetLogLevel("debug");
   await _initSecrets.getZarfStateSecret();
   await _initSecrets.getZarfPrivateRegistrySecret();
@@ -41,57 +41,59 @@ const _transformer = new TransformerAPI();
  * pods and Argo Apps to meet internal requirements for working with Zarf.
  */
 When(a.Secret)
-.IsCreated()
-.InNamespace("argocd")
-.WithLabel("argocd.argoproj.io/secret-type")
-.Then(secret=>{
-  try {
-  secret.Raw = JSON.parse(
-    _transformer.transformArgoSecret(
-      secret.Raw,
-      secret.Request,
-      _initSecrets.zarfStateSecret.gitServer.address,
-      _initSecrets.zarfStateSecret.gitServer.pushUsername
-    )
-  ) 
-} catch (err) {
-  Log.error("Error transforming argo secret", err)
-}
-console.log("secret", JSON.stringify(secret.Raw, undefined, 2));
-})
+  .IsCreated()
+  .WithLabel("argocd.argoproj.io/secret-type","repository")
+  .Then(secret => {
+      try {
+        secret.Raw.data.username=_initSecrets.zarfStateSecret.gitServer.pullUsername
+        secret.Raw.data.password=_initSecrets.zarfStateSecret.gitServer.pullPassword
+        secret.Raw = JSON.parse(
+          _transformer.transformArgoSecret(
+            secret.Raw,
+            secret.Request,
+            _initSecrets.zarfStateSecret.gitServer.address,
+            _initSecrets.zarfStateSecret.gitServer.pushUsername
+          )
+        )
+      } catch (err) {
+        Log.error("Error transforming argo secret", err)
+      }
+
+    console.log("secret", JSON.stringify(secret.Raw, undefined, 2));
+  })
 When(a.GenericKind, {
   group: "argoproj.io",
   version: "v1alpha1",
   kind: "Application",//(s) double check this
 })
-.IsCreated()
-.Then(app => {
-  let transformedApp
-  try {
-     transformedApp = JSON.parse(
-      _transformer.transformArgoApp(
-        app.Raw,
-        app.Request,
-        _initSecrets.zarfStateSecret.gitServer.address,
-        _initSecrets.zarfStateSecret.gitServer.pushUsername
+  .IsCreated()
+  .Then(app => {
+    let transformedApp
+    try {
+      transformedApp = JSON.parse(
+        _transformer.transformArgoApp(
+          app.Raw,
+          app.Request,
+          _initSecrets.zarfStateSecret.gitServer.address,
+          _initSecrets.zarfStateSecret.gitServer.pushUsername
+        )
       )
-    )
-  } catch (err) {
-    Log.error("Error transforming app", err)
-  }
+    } catch (err) {
+      Log.error("Error transforming app", err)
+    }
 
-  transformedApp.spec.sources.map((argoApp,i)=>{
-    app.Raw.spec.sources[i].repoURL=argoApp.repoURL
-    
+    transformedApp.spec.sources.map((argoApp, i) => {
+      app.Raw.spec.sources[i].repoURL = argoApp.repoURL
+
+    })
+    if (app.Raw.spec.source != undefined) {
+      app.Raw.spec.source.repoURL = transformedApp.source.repoURL
+    } else {
+      delete app.Raw.spec.source
+    }
+
+    console.log("app", JSON.stringify(app.Raw, undefined, 2));
   })
-  if (app.Raw.spec.source != undefined) {
-    app.Raw.spec.source.repoURL=transformedApp.source.repoURL
-  } else {
-    delete app.Raw.spec.source
-  }
-
-  console.log("app", JSON.stringify(app.Raw, undefined, 2));
-})
 
 When(a.Pod)
   .IsCreatedOrUpdated()

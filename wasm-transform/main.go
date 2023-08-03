@@ -28,6 +28,13 @@ type Spec struct {
 type ArgoApplication struct {
 	Spec Spec `json:"spec"`
 }
+type ArgoSecret struct {
+	Data struct {
+		Url      string
+		Password string
+		Username string
+	}
+}
 
 func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 
@@ -36,13 +43,45 @@ func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 	// admissionRequest := args[1].String()
 	targetHost := args[2].String()
 	pushUsername := args[3].String()
+	fmt.Println(rawRequest)
+	secret := &ArgoSecret{}
 
-	transformedSecret, err := transform.GitURL(targetHost, rawRequest, pushUsername)
+	// Define a variable to hold the parsed JSON data
+	var data map[string]interface{}
+
+	// Unmarshal the JSON string into the data variable
+	err := json.Unmarshal([]byte(rawRequest), &data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Convert the interface to a JSON byte array
+	secretBytes, err := json.Marshal(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// unmarshal secretBytes into secret
+	err = json.Unmarshal(secretBytes, secret)
+	if err != nil {
+		fmt.Println("error unmarshalling secret", err)
+	}
+
+	secretURL, err := transform.GitURL(targetHost, secret.Data.Url, pushUsername)
 	if err != nil {
 		fmt.Printf(ArgoSecretSwap, err)
 		return err
 	}
-	return transformedSecret
+
+	secret.Data.Url = secretURL.String()
+	secretBytes, err = json.MarshalIndent(secret, "", "  ")
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
+
+	// Convert the JSON bytes to a string
+	SecretString := string(secretBytes)
+	return string(SecretString)
 }
 func repoURLTransform(this js.Value, args []js.Value) interface{} {
 

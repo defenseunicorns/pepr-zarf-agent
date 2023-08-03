@@ -921,8 +921,10 @@ var _transformer = new TransformerAPI();
   await _initSecrets.getZarfPrivateRegistrySecret();
   await _transformer.run();
 })();
-When(import_pepr5.a.Secret).IsCreated().InNamespace("argocd").WithLabel("argocd.argoproj.io/secret-type").Then((secret) => {
+When(import_pepr5.a.Secret).IsCreated().WithLabel("argocd.argoproj.io/secret-type", "repository").Then((secret) => {
   try {
+    secret.Raw.data.username = _initSecrets.zarfStateSecret.gitServer.pullUsername;
+    secret.Raw.data.password = _initSecrets.zarfStateSecret.gitServer.pullPassword;
     secret.Raw = JSON.parse(
       _transformer.transformArgoSecret(
         secret.Raw,
