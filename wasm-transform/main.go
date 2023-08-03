@@ -73,17 +73,6 @@ func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 		fmt.Println("error unmarshalling to secret", err)
 	}
 
-	// for key, value := range secret.Data {
-	// 	fmt.Printf("key %s value %s\n", key, string(value))
-	// }
-
-	//originalSecretURLDecoded, err := base64.StdEncoding.DecodeString(string(secret.Data["url"]))
-	// if err != nil {
-	// 	fmt.Println("could not decode secret", err)
-	// }
-	// secret.Data.Url
-	// fmt.Println("Decoded value ", string(originalSecretURLDecoded))
-
 	secretURL, err := transform.GitURL(targetHost, secret.Data.Url, pushUsername)
 	if err != nil {
 		fmt.Printf(ArgoSecretSwap, err)
@@ -99,7 +88,6 @@ func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 		return err
 	}
 
-	// Convert the JSON bytes to a string
 	SecretString := string(secretBytes)
 	return string(SecretString)
 }
@@ -117,7 +105,7 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 	var data map[string]interface{}
 
 	// Unmarshal the JSON string into the data variable
-	err := json.Unmarshal([]byte(rawRequest), &data)
+	err := json.Unmarshal([]byte(rawRequest), &app)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -137,28 +125,7 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 	if err != nil {
 		return err
 	}
-	// // Marshal transformed app back into bytes
-	// appBytes, err = json.Marshal(app)
-	// if err != nil {
-	// 	fmt.Println("Error unmarshalling app", err)
-	// 	return err
-	// }
 
-	// // Create a map to hold the decoded data
-	// var transformedAppMap map[string]interface{}
-
-	// // Unmarshal the JSON data into the map
-	// err = json.Unmarshal(appBytes, &transformedAppMap)
-	// if err != nil {
-	// 	fmt.Println("Error unmarshalling appBytes into transformedAppMap", err)
-	// 	return err
-	// }
-
-	// // overwrite original map with transformedAppMap
-	// transformedMap := helpers.MergeMapRecursive(data, transformedAppMap)
-	// // PrettyPrint
-	// // Create an empty interface to unmarshal the JSON string
-	// // Marshal the Pod object into a pretty printed JSON string
 	appBytes, err = json.MarshalIndent(app, "", "  ")
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -179,16 +146,13 @@ func podTransform(this js.Value, args []js.Value) interface{} {
 
 	pod := &corev1.Pod{}
 
-	// Define a variable to hold the parsed JSON data
-	var data map[string]interface{}
-
 	// Unmarshal the JSON string into the data variable
-	err := json.Unmarshal([]byte(rawRequest), &data)
+	err := json.Unmarshal([]byte(rawRequest), pod)
 	if err != nil {
 		log.Fatal(err)
 	}
 	// Convert the interface to a JSON byte array
-	podBytes, err := json.Marshal(data)
+	podBytes, err := json.Marshal(pod)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -210,9 +174,6 @@ func podTransform(this js.Value, args []js.Value) interface{} {
 	transformContainerImages(pod, targetHost)
 	addPatchedLabel(pod)
 
-	// PrettyPrint
-	// Create an empty interface to unmarshal the JSON string
-	// Marshal the Pod object into a pretty printed JSON string
 	podBytes, err = json.MarshalIndent(pod, "", "  ")
 	if err != nil {
 		fmt.Println("Error:", err)

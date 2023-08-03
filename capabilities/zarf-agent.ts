@@ -43,29 +43,18 @@ const _transformer = new TransformerAPI();
 When(a.Secret)
   .IsCreated()
   .InNamespace("argocd")
-  // .WithLabel("argocd.argoproj.io/secret-type","repository")
+  .WithLabel("argocd.argoproj.io/secret-type","repository")
   .Then(secret => {
-    Log.info("argocd-repo-github-podinfo ",secret.Raw?.metadata?.name)
-    if (argoSecretLabels(secret)){
-   
-        secret.Raw  = JSON.parse(
-          _transformer.transformArgoSecret(
-            secret.Raw,
-            secret.Request,
-            _initSecrets.zarfStateSecret.gitServer.address,
-            _initSecrets.zarfStateSecret.gitServer.pushUsername,
-            _initSecrets.zarfStateSecret.gitServer.pullPassword,
-            _initSecrets.zarfStateSecret.gitServer.pullUsername
-
-          )
+      secret.Raw = JSON.parse(
+        _transformer.transformArgoSecret(
+          secret.Raw,
+          secret.Request,
+          _initSecrets.zarfStateSecret.gitServer.address,
+          _initSecrets.zarfStateSecret.gitServer.pushUsername,
+          _initSecrets.zarfStateSecret.gitServer.pullPassword,
+          _initSecrets.zarfStateSecret.gitServer.pullUsername
         )
-        // secret.Raw.data.name = argoRepoSecretDataDecoder(secret.Raw.data.name)
-        // secret.Raw.data.url = argoRepoSecretDataDecoder(secret.Raw.data.url)
-        // secret.Raw.data.password = argoRepoSecretDataDecoder(secret.Raw.data.password)
-        // secret.Raw.data.username = argoRepoSecretDataDecoder(secret.Raw.data.username)
-        console.log("secret", JSON.stringify(secret.Raw, undefined, 2));
-          }
-    
+      )
   })
 When(a.GenericKind, {
   group: "argoproj.io",
@@ -98,8 +87,6 @@ When(a.GenericKind, {
     } else {
       delete app.Raw.spec.source
     }
-
-    console.log("app", JSON.stringify(app.Raw, undefined, 2));
   })
 
 When(a.Pod)

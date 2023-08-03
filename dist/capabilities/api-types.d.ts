@@ -8,12 +8,6 @@ export interface Image {
     Reference: string;
     TagOrDigest: string;
 }
-export interface RepoSecretData {
-    name: string;
-    password: string;
-    url: string;
-    username: string;
-}
 export interface AuthData {
     auths: {
         [ipAddress: string]: {

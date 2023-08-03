@@ -1,4 +1,4 @@
-import { IInitSecret, RepoSecretData } from "./api-types";
+import { IInitSecret } from "./api-types";
 import { Log, PeprRequest, a } from "pepr";
 
 export function UpdateContainerImages(
