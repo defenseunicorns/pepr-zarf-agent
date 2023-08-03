@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -28,14 +29,32 @@ type Spec struct {
 type ArgoApplication struct {
 	Spec Spec `json:"spec"`
 }
-type ArgoSecret struct {
-	Data struct {
-		Url      string
-		Password string
-		Username string
-	}
+type ArgoSecretData struct {
+	Url      string `json:"url"`
+	Password string `json:"password"`
+	Username string `json:"username"`
+	Name     string `json:"name"`
+}
+type CustomSecret struct {
+	ApiVersion string            `json:"apiVersion"`
+	Kind       string            `json:"kind"`
+	Metadata   SecretMetadata    `json:"metadata"`
+	Immutable  *bool             `json:"immutable,omitempty"`
+	Data       ArgoSecretData    `json:"data"`
+	StringData map[string]string `json:"stringData,omitempty"`
+	Type       string            `json:"type,omitempty"`
 }
 
+type SecretMetadata struct {
+	Name        string            `json:"name"`
+	Namespace   string            `json:"namespace,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+func base64EncodeToBytes(str string) []byte {
+	return []byte(base64.StdEncoding.EncodeToString([]byte(str)))
+}
 func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 
 	// Get arguments from Pepr
@@ -43,28 +62,27 @@ func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 	// admissionRequest := args[1].String()
 	targetHost := args[2].String()
 	pushUsername := args[3].String()
+	pullPassword := args[4].String()
+	pullUsername := args[5].String()
+
 	fmt.Println(rawRequest)
-	secret := &ArgoSecret{}
+	secret := &CustomSecret{}
 
-	// Define a variable to hold the parsed JSON data
-	var data map[string]interface{}
-
-	// Unmarshal the JSON string into the data variable
-	err := json.Unmarshal([]byte(rawRequest), &data)
+	err := json.Unmarshal([]byte(rawRequest), secret)
 	if err != nil {
-		log.Fatal(err)
-	}
-	// Convert the interface to a JSON byte array
-	secretBytes, err := json.Marshal(data)
-	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error unmarshalling to secret", err)
 	}
 
-	// unmarshal secretBytes into secret
-	err = json.Unmarshal(secretBytes, secret)
-	if err != nil {
-		fmt.Println("error unmarshalling secret", err)
-	}
+	// for key, value := range secret.Data {
+	// 	fmt.Printf("key %s value %s\n", key, string(value))
+	// }
+
+	//originalSecretURLDecoded, err := base64.StdEncoding.DecodeString(string(secret.Data["url"]))
+	// if err != nil {
+	// 	fmt.Println("could not decode secret", err)
+	// }
+	// secret.Data.Url
+	// fmt.Println("Decoded value ", string(originalSecretURLDecoded))
 
 	secretURL, err := transform.GitURL(targetHost, secret.Data.Url, pushUsername)
 	if err != nil {
@@ -73,9 +91,11 @@ func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 	}
 
 	secret.Data.Url = secretURL.String()
-	secretBytes, err = json.MarshalIndent(secret, "", "  ")
+	secret.Data.Password = pullPassword
+	secret.Data.Username = pullUsername
+	secretBytes, err := json.MarshalIndent(secret, "", "  ")
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Error marshal secret to bytes:", err)
 		return err
 	}
 

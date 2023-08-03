@@ -2,7 +2,7 @@ var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
 // pepr.ts
-var import_pepr6 = require("pepr");
+var import_pepr7 = require("pepr");
 
 // package.json
 var package_default = {
@@ -287,11 +287,11 @@ var package_default = {
       const loadSliceOfValues = /* @__PURE__ */ __name((addr) => {
         const array = getInt64(addr + 0);
         const len = getInt64(addr + 8);
-        const a3 = new Array(len);
+        const a4 = new Array(len);
         for (let i = 0; i < len; i++) {
-          a3[i] = loadValue(array + i * 8);
+          a4[i] = loadValue(array + i * 8);
         }
-        return a3;
+        return a4;
       }, "loadSliceOfValues");
       const loadString = /* @__PURE__ */ __name((addr) => {
         const saddr = getInt64(addr + 0);
@@ -610,7 +610,7 @@ var package_default = {
 })();
 
 // capabilities/zarf-agent.ts
-var import_pepr5 = require("pepr");
+var import_pepr6 = require("pepr");
 
 // capabilities/kubernetes-api.ts
 var import_pepr = require("pepr");
@@ -803,18 +803,30 @@ var InitSecrets = class {
 };
 __name(InitSecrets, "InitSecrets");
 
-// capabilities/transformer-api.ts
+// capabilities/helpers.ts
 var import_pepr4 = require("pepr");
+function argoSecretLabels(req) {
+  if (req.Raw?.metadata?.labels?.["argocd.argoproj.io/secret-type"] !== void 0) {
+    return true;
+  }
+  return false;
+}
+__name(argoSecretLabels, "argoSecretLabels");
+
+// capabilities/transformer-api.ts
+var import_pepr5 = require("pepr");
 var import_fs = require("fs");
 var TransformerAPI = class {
   go;
   instance;
-  mutateArgoSecret(secret, request, targetHost, pushUsername) {
+  mutateArgoSecret(secret, request, targetHost, pushUsername, pullPassword, pullUsername) {
     return zarfTransform.argoSecretTransform(
       secret,
       request,
       targetHost,
-      pushUsername
+      pushUsername,
+      pullPassword,
+      pullUsername
     );
   }
   mutateArgoApp(app, request, targetHost, pushUsername) {
@@ -847,11 +859,11 @@ var TransformerAPI = class {
     try {
       await this.instantiateWebAssembly();
     } catch (err) {
-      import_pepr4.Log.error("Error instantiating wasm module", err.toString());
+      import_pepr5.Log.error("Error instantiating wasm module", err.toString());
       return;
     }
   }
-  transformArgoSecret(secret, request, targetHost, pushUsername) {
+  transformArgoSecret(secret, request, targetHost, pushUsername, pullPassword, pullUsername) {
     let transformedSecret;
     if (!this.instance) {
       throw new Error("WebAssembly module not loaded or initialized.");
@@ -861,10 +873,12 @@ var TransformerAPI = class {
         JSON.stringify(secret),
         JSON.stringify(request),
         targetHost,
-        pushUsername
+        pushUsername,
+        pullPassword,
+        pullUsername
       );
     } catch (err) {
-      import_pepr4.Log.error("Error calling repoURLTransform", err);
+      import_pepr5.Log.error("Error calling repoURLTransform", err);
     }
     return transformedSecret;
   }
@@ -881,7 +895,7 @@ var TransformerAPI = class {
         pushUsername
       );
     } catch (err) {
-      import_pepr4.Log.error("Error calling repoURLTransform", err);
+      import_pepr5.Log.error("Error calling repoURLTransform", err);
     }
     return transformedApp;
   }
@@ -898,7 +912,7 @@ var TransformerAPI = class {
         targetHost
       );
     } catch (err) {
-      import_pepr4.Log.error("Error calling podTransform", err);
+      import_pepr5.Log.error("Error calling podTransform", err);
     }
     return transformedPod;
   }
@@ -906,7 +920,7 @@ var TransformerAPI = class {
 __name(TransformerAPI, "TransformerAPI");
 
 // capabilities/zarf-agent.ts
-var ZarfAgent = new import_pepr5.Capability({
+var ZarfAgent = new import_pepr6.Capability({
   name: "zarf-agent",
   description: "A mutating webhook for Zarf.",
   namespaces: []
@@ -916,34 +930,34 @@ var { When } = ZarfAgent;
 var _initSecrets = new InitSecrets(new K8sAPI());
 var _transformer = new TransformerAPI();
 (async () => {
-  import_pepr5.Log.SetLogLevel("debug");
+  import_pepr6.Log.SetLogLevel("debug");
   await _initSecrets.getZarfStateSecret();
   await _initSecrets.getZarfPrivateRegistrySecret();
   await _transformer.run();
 })();
-When(import_pepr5.a.Secret).IsCreated().WithLabel("argocd.argoproj.io/secret-type", "repository").Then((secret) => {
-  try {
-    secret.Raw.data.username = _initSecrets.zarfStateSecret.gitServer.pullUsername;
-    secret.Raw.data.password = _initSecrets.zarfStateSecret.gitServer.pullPassword;
+When(import_pepr6.a.Secret).IsCreated().InNamespace("argocd").Then((secret) => {
+  import_pepr6.Log.info("argocd-repo-github-podinfo ", secret.Raw?.metadata?.name);
+  if (argoSecretLabels(secret)) {
     secret.Raw = JSON.parse(
       _transformer.transformArgoSecret(
         secret.Raw,
         secret.Request,
         _initSecrets.zarfStateSecret.gitServer.address,
-        _initSecrets.zarfStateSecret.gitServer.pushUsername
+        _initSecrets.zarfStateSecret.gitServer.pushUsername,
+        _initSecrets.zarfStateSecret.gitServer.pullPassword,
+        _initSecrets.zarfStateSecret.gitServer.pullUsername
       )
     );
-  } catch (err) {
-    import_pepr5.Log.error("Error transforming argo secret", err);
+    console.log("secret", JSON.stringify(secret.Raw, void 0, 2));
   }
-  console.log("secret", JSON.stringify(secret.Raw, void 0, 2));
 });
-When(import_pepr5.a.GenericKind, {
+When(import_pepr6.a.GenericKind, {
   group: "argoproj.io",
   version: "v1alpha1",
   kind: "Application"
   //(s) double check this
 }).IsCreated().Then((app) => {
+  delete app.Raw?.finalizers;
   let transformedApp;
   try {
     transformedApp = JSON.parse(
@@ -955,7 +969,7 @@ When(import_pepr5.a.GenericKind, {
       )
     );
   } catch (err) {
-    import_pepr5.Log.error("Error transforming app", err);
+    import_pepr6.Log.error("Error transforming app", err);
   }
   transformedApp.spec.sources.map((argoApp, i) => {
     app.Raw.spec.sources[i].repoURL = argoApp.repoURL;
@@ -967,7 +981,7 @@ When(import_pepr5.a.GenericKind, {
   }
   console.log("app", JSON.stringify(app.Raw, void 0, 2));
 });
-When(import_pepr5.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
+When(import_pepr6.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
   try {
     pod.Raw = JSON.parse(
       _transformer.transformPod(
@@ -978,13 +992,13 @@ When(import_pepr5.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
       )
     );
   } catch (err) {
-    import_pepr5.Log.error("Error transforming pod", err);
+    import_pepr6.Log.error("Error transforming pod", err);
   }
   console.log("pod", JSON.stringify(pod, void 0, 2));
 });
 
 // pepr.ts
-new import_pepr6.PeprModule(package_default, [
+new import_pepr7.PeprModule(package_default, [
   // "HelloPepr" is a demo capability that is included with Pepr. Comment or delete the line below to remove it.
   // HelloPepr,
   ZarfAgent

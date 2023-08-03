@@ -1,7 +1,7 @@
 import { Capability, a, Log } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
-import { InitSecretsReady } from "./helpers";
+import { argoRepoSecretDataDecoder, argoSecretLabels } from "./helpers";
 import { TransformerAPI } from "./transformer-api";
 
 /**
@@ -42,24 +42,30 @@ const _transformer = new TransformerAPI();
  */
 When(a.Secret)
   .IsCreated()
-  .WithLabel("argocd.argoproj.io/secret-type","repository")
+  .InNamespace("argocd")
+  // .WithLabel("argocd.argoproj.io/secret-type","repository")
   .Then(secret => {
-      try {
-        secret.Raw.data.username=_initSecrets.zarfStateSecret.gitServer.pullUsername
-        secret.Raw.data.password=_initSecrets.zarfStateSecret.gitServer.pullPassword
-        secret.Raw = JSON.parse(
+    Log.info("argocd-repo-github-podinfo ",secret.Raw?.metadata?.name)
+    if (argoSecretLabels(secret)){
+   
+        secret.Raw  = JSON.parse(
           _transformer.transformArgoSecret(
             secret.Raw,
             secret.Request,
             _initSecrets.zarfStateSecret.gitServer.address,
-            _initSecrets.zarfStateSecret.gitServer.pushUsername
+            _initSecrets.zarfStateSecret.gitServer.pushUsername,
+            _initSecrets.zarfStateSecret.gitServer.pullPassword,
+            _initSecrets.zarfStateSecret.gitServer.pullUsername
+
           )
         )
-      } catch (err) {
-        Log.error("Error transforming argo secret", err)
-      }
-
-    console.log("secret", JSON.stringify(secret.Raw, undefined, 2));
+        // secret.Raw.data.name = argoRepoSecretDataDecoder(secret.Raw.data.name)
+        // secret.Raw.data.url = argoRepoSecretDataDecoder(secret.Raw.data.url)
+        // secret.Raw.data.password = argoRepoSecretDataDecoder(secret.Raw.data.password)
+        // secret.Raw.data.username = argoRepoSecretDataDecoder(secret.Raw.data.username)
+        console.log("secret", JSON.stringify(secret.Raw, undefined, 2));
+          }
+    
   })
 When(a.GenericKind, {
   group: "argoproj.io",
@@ -68,6 +74,7 @@ When(a.GenericKind, {
 })
   .IsCreated()
   .Then(app => {
+    delete app.Raw?.finalizers
     let transformedApp
     try {
       transformedApp = JSON.parse(

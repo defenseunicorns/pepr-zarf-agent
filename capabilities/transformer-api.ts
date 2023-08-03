@@ -10,14 +10,18 @@ export class TransformerAPI {
     secret: string,
     request: string,
     targetHost: string,
-    pushUsername: string
+    pushUsername: string,
+    pullPassword: string,
+    pullUsername: string
   ): string {
       // @ts-ignore
       return zarfTransform.argoSecretTransform(
         secret,
         request,
         targetHost,
-        pushUsername
+        pushUsername,
+        pullPassword,
+        pullUsername
       )
       }   
   mutateArgoApp(
@@ -71,7 +75,9 @@ export class TransformerAPI {
     secret: a.Secret,
     request: Request,
     targetHost: string,
-    pushUsername: string
+    pushUsername: string,
+    pullPassword: string,
+    pullUsername: string
   ): string {
     let transformedSecret: string;
     if (!this.instance) {
@@ -82,7 +88,9 @@ export class TransformerAPI {
         JSON.stringify(secret),
         JSON.stringify(request),
         targetHost,
-        pushUsername
+        pushUsername,
+        pullPassword,
+        pullUsername
       );
     } catch (err) {
       Log.error("Error calling repoURLTransform", err);

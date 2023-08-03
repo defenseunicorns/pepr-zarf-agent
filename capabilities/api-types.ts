@@ -1,6 +1,7 @@
 import { V1ObjectMeta } from "@kubernetes/client-node";
 
 
+
 // Image represents a config for an OCI image.
 export interface Image {
   Host: string;
@@ -10,6 +11,12 @@ export interface Image {
   Digest: string;
   Reference: string;
   TagOrDigest: string;
+}
+export interface RepoSecretData {
+  name: string;
+  password: string;
+  url: string;
+  username: string;
 }
 
 export interface AuthData {
