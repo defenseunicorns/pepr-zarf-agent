@@ -101,8 +101,8 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 
 	// app := &appv1.Application{}
 	app := &ArgoApplication{}
-	// Define a variable to hold the parsed JSON data
-	var data map[string]interface{}
+	// // Define a variable to hold the parsed JSON data
+	// var data map[string]interface{}
 
 	// Unmarshal the JSON string into the data variable
 	err := json.Unmarshal([]byte(rawRequest), &app)
@@ -110,7 +110,7 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 		log.Fatal(err)
 	}
 	// Convert the interface to a JSON byte array
-	appBytes, err := json.Marshal(data)
+	appBytes, err := json.Marshal(app)
 	if err != nil {
 		log.Fatal(err)
 	}
