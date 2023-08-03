@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -52,9 +51,6 @@ type SecretMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
-func base64EncodeToBytes(str string) []byte {
-	return []byte(base64.StdEncoding.EncodeToString([]byte(str)))
-}
 func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 
 	// Get arguments from Pepr
@@ -91,6 +87,7 @@ func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 	SecretString := string(secretBytes)
 	return string(SecretString)
 }
+
 func repoURLTransform(this js.Value, args []js.Value) interface{} {
 
 	// Get arguments from Pepr
@@ -101,32 +98,67 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 
 	// app := &appv1.Application{}
 	app := &ArgoApplication{}
-	// // Define a variable to hold the parsed JSON data
-	// var data map[string]interface{}
 
-	// Unmarshal the JSON string into the data variable
-	err := json.Unmarshal([]byte(rawRequest), &app)
+	var originalArgoMap map[string]interface{}
+	var updatedArgoMap map[string]interface{}
+	var updatedArgoBytes []byte
+
+	// Unmarshal the byte string into the originalArgoMap
+	err := json.Unmarshal([]byte(rawRequest), &originalArgoMap)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Convert the interface to a JSON byte array
-	appBytes, err := json.Marshal(app)
+
+	// Unmarshal the byte string into the App Struct
+	err = json.Unmarshal([]byte(rawRequest), &app)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// unmarshal podBytes into pod
-	err = json.Unmarshal(appBytes, app)
-	if err != nil {
-		fmt.Println("Error unmarshalling app", err)
-	}
-
+	// Mutate the repoURLs on the ArgoApp
 	err = transformAppRepoURLs(app, targetHost, pushUsername)
 	if err != nil {
+		fmt.Println("error mutating repoURLs on the ArgoApp")
 		return err
 	}
 
-	appBytes, err = json.MarshalIndent(app, "", "  ")
+	// Marshall the updated ArgoApp to bytes
+	updatedArgoBytes, err = json.Marshal(app)
+	if err != nil {
+		fmt.Println("Error marshalling updated ArgoApp to bytes")
+		return err
+	}
+
+	err = json.Unmarshal(updatedArgoBytes, &updatedArgoMap)
+	if err != nil {
+		fmt.Println("Error unmarshalling updatedArgoBytes to updatedArgoMap")
+		return err
+	}
+
+	sources, ok := originalArgoMap["spec"].(map[string]interface{})["sources"].([]interface{})
+	if !ok {
+		fmt.Println("Failed to extract original sources from the object.")
+		return fmt.Errorf("Failed to extract original sources from the object.")
+	}
+	for i, source := range sources {
+		sourceMap, ok := source.(map[string]interface{})
+		if !ok {
+			fmt.Println("Failed to extract source map.")
+			continue
+		}
+		sourceMap["repoURL"] = app.Spec.Sources[i].RepoURL
+
+	}
+
+	if app.Spec.Source.RepoURL != "" {
+		if spec, ok := originalArgoMap["spec"].(map[string]interface{}); ok {
+			if source, ok := spec["source"].(map[string]interface{}); ok {
+				source["repoURL"] = app.Spec.Source.RepoURL
+			}
+		}
+	}
+
+	appBytes, err := json.MarshalIndent(originalArgoMap, "", "  ")
 	if err != nil {
 		fmt.Println("Error:", err)
 		return err

@@ -64,9 +64,8 @@ When(a.GenericKind, {
   .IsCreated()
   .Then(app => {
     delete app.Raw?.finalizers
-    let transformedApp
     try {
-      transformedApp = JSON.parse(
+      app.Raw = JSON.parse(
         _transformer.transformArgoApp(
           app.Raw,
           app.Request,
@@ -78,15 +77,6 @@ When(a.GenericKind, {
       Log.error("Error transforming app", err)
     }
 
-    transformedApp.spec.sources.map((argoApp, i) => {
-      app.Raw.spec.sources[i].repoURL = argoApp.repoURL
-
-    })
-    if (app.Raw.spec.source != undefined) {
-      app.Raw.spec.source.repoURL = transformedApp.source.repoURL
-    } else {
-      delete app.Raw.spec.source
-    }
   })
 
 When(a.Pod)

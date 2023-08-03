@@ -944,9 +944,8 @@ When(import_pepr5.a.GenericKind, {
   //(s) double check this
 }).IsCreated().Then((app) => {
   delete app.Raw?.finalizers;
-  let transformedApp;
   try {
-    transformedApp = JSON.parse(
+    app.Raw = JSON.parse(
       _transformer.transformArgoApp(
         app.Raw,
         app.Request,
@@ -956,14 +955,6 @@ When(import_pepr5.a.GenericKind, {
     );
   } catch (err) {
     import_pepr5.Log.error("Error transforming app", err);
-  }
-  transformedApp.spec.sources.map((argoApp, i) => {
-    app.Raw.spec.sources[i].repoURL = argoApp.repoURL;
-  });
-  if (app.Raw.spec.source != void 0) {
-    app.Raw.spec.source.repoURL = transformedApp.source.repoURL;
-  } else {
-    delete app.Raw.spec.source;
   }
 });
 When(import_pepr5.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
