@@ -220,17 +220,17 @@ export function InitSecretsReady(_initSecrets: IInitSecret): boolean {
 //   return image_sections.join("/");
 // }
 // this is not necessary a.HasLabels("zarf-agent") is sufficient
-export function argoRepoSecretDataDecoder(encodedString: string): string {
-    return Buffer.from(encodedString, 'base64').toString('utf8')
-}
-export function argoSecretLabels(req: PeprRequest<a.Secret>): boolean {
-  if (
-    req.Raw?.metadata?.labels?.["argocd.argoproj.io/secret-type"] !== undefined 
-  ) {
-    return true;
-  }
-  return false;
-}
+// export function argoRepoSecretDataDecoder(encodedString: string): string {
+//     return Buffer.from(encodedString, 'base64').toString('utf8')
+// }
+// export function argoSecretLabels(req: PeprRequest<a.Secret>): boolean {
+//   if (
+//     req.Raw?.metadata?.labels?.["argocd.argoproj.io/secret-type"] !== undefined 
+//   ) {
+//     return true;
+//   }
+//   return false;
+// }
 // Deprecated******************************************************
 
 // export function HasIgnoreLabels(req: PeprRequest<a.Pod>): boolean {

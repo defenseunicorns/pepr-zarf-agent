@@ -7,6 +7,7 @@ import (
 	"syscall/js"
 
 	// appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+
 	corev1 "k8s.io/api/core/v1"
 
 	// appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -16,6 +17,21 @@ import (
 const AgentErrImageSwap = "Unable to swap the host for (%s)"
 const RepoURLHostSwap = "Unable to swap repoURL for (%s)"
 const ArgoSecretSwap = "Unable to swap argo secret (%s)"
+const FluxSecretSwap = "Unable to swap flux secret (%s)"
+const ZarfGitServerSecretName = "private-git-server"
+
+// SecretRef contains the name used to reference a git repository secret.
+type SecretRef struct {
+	Name string `json:"name"`
+}
+
+// GenericGitRepo contains the URL of a git repo and the secret that corresponds to it for use with Flux.
+type GenericGitRepo struct {
+	Spec struct {
+		URL       string    `json:"url"`
+		SecretRef SecretRef `json:"secretRef,omitempty"`
+	}
+}
 
 type Source struct {
 	RepoURL string `json:"repoURL"`
@@ -34,7 +50,7 @@ type ArgoSecretData struct {
 	Username string `json:"username"`
 	Name     string `json:"name"`
 }
-type CustomSecret struct {
+type CustomArgoSecret struct {
 	ApiVersion string            `json:"apiVersion"`
 	Kind       string            `json:"kind"`
 	Metadata   SecretMetadata    `json:"metadata"`
@@ -51,41 +67,61 @@ type SecretMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
-func argoSecretTransform(this js.Value, args []js.Value) interface{} {
-
+func fluxRepoTransform(this js.Value, args []js.Value) interface{} {
 	// Get arguments from Pepr
 	rawRequest := args[0].String()
 	// admissionRequest := args[1].String()
 	targetHost := args[2].String()
 	pushUsername := args[3].String()
-	pullPassword := args[4].String()
-	pullUsername := args[5].String()
 
-	fmt.Println(rawRequest)
-	secret := &CustomSecret{}
+	gitRepo := &GenericGitRepo{}
 
-	err := json.Unmarshal([]byte(rawRequest), secret)
+	var originalFluxRepoMap map[string]interface{}
+
+	// Unmarshal the byte string into the originalArgoMap
+	err := json.Unmarshal([]byte(rawRequest), &originalFluxRepoMap)
 	if err != nil {
-		fmt.Println("error unmarshalling to secret", err)
+		log.Fatal(err)
 	}
 
-	secretURL, err := transform.GitURL(targetHost, secret.Data.Url, pushUsername)
+	// Unmarshal the byte string into the gitRepo Struct
+	err = json.Unmarshal([]byte(rawRequest), &gitRepo)
 	if err != nil {
-		fmt.Printf(ArgoSecretSwap, err)
+		log.Fatal(err)
+	}
+
+	// Mutate the repoURLs on the ArgoApp
+	err = transformFluxRepoURLs(gitRepo, targetHost, pushUsername)
+	if err != nil {
+		fmt.Println("error mutating repoURLs on the ArgoApp")
 		return err
 	}
 
-	secret.Data.Url = secretURL.String()
-	secret.Data.Password = pullPassword
-	secret.Data.Username = pullUsername
-	secretBytes, err := json.MarshalIndent(secret, "", "  ")
+	gitRepo.Spec.SecretRef = SecretRef{Name: ZarfGitServerSecretName}
+	spec, ok := originalFluxRepoMap["spec"].(map[string]interface{})
+	if !ok {
+		fmt.Println("Failed to access .spec")
+		return "ERROR"
+	}
+	fmt.Println("GIT REPO URL ", gitRepo.Spec.URL)
+
+	spec["url"] = gitRepo.Spec.URL
+
+	secretRef := map[string]interface{}{
+		"name": ZarfGitServerSecretName,
+	}
+	spec["secretRef"] = secretRef
+
+	repoBytes, err := json.MarshalIndent(originalFluxRepoMap, "", "  ")
 	if err != nil {
-		fmt.Println("Error marshal secret to bytes:", err)
+		fmt.Println("Error:", err)
 		return err
 	}
 
-	SecretString := string(secretBytes)
-	return string(SecretString)
+	// Convert the JSON bytes to a string
+	AppString := string(repoBytes)
+	return string(AppString)
+
 }
 
 func repoURLTransform(this js.Value, args []js.Value) interface{} {
@@ -96,7 +132,6 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 	targetHost := args[2].String()
 	pushUsername := args[3].String()
 
-	// app := &appv1.Application{}
 	app := &ArgoApplication{}
 
 	var originalArgoMap map[string]interface{}
@@ -168,6 +203,43 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 	AppString := string(appBytes)
 	return string(AppString)
 }
+
+func argoSecretTransform(this js.Value, args []js.Value) interface{} {
+
+	// Get arguments from Pepr
+	rawRequest := args[0].String()
+	// admissionRequest := args[1].String()
+	targetHost := args[2].String()
+	pushUsername := args[3].String()
+	pullPassword := args[4].String()
+	pullUsername := args[5].String()
+
+	secret := &CustomArgoSecret{}
+
+	err := json.Unmarshal([]byte(rawRequest), secret)
+	if err != nil {
+		fmt.Println("error unmarshalling to secret", err)
+	}
+
+	secretURL, err := transform.GitURL(targetHost, secret.Data.Url, pushUsername)
+	if err != nil {
+		fmt.Printf(ArgoSecretSwap, err)
+		return err
+	}
+
+	secret.Data.Url = secretURL.String()
+	secret.Data.Password = pullPassword
+	secret.Data.Username = pullUsername
+	secretBytes, err := json.MarshalIndent(secret, "", "  ")
+	if err != nil {
+		fmt.Println("Error marshal secret to bytes:", err)
+		return err
+	}
+
+	SecretString := string(secretBytes)
+	return string(SecretString)
+}
+
 func podTransform(this js.Value, args []js.Value) interface{} {
 
 	// Get arguments from Pepr
@@ -233,6 +305,15 @@ func addImagePullSecret(pod *corev1.Pod, imagePullSecretName string) {
 		Name: imagePullSecretName,
 	})
 }
+func transformFluxRepoURLs(gitRepo *GenericGitRepo, targetHost, pushUsername string) error {
+	replacement, err := transform.GitURL(targetHost, gitRepo.Spec.URL, pushUsername)
+	if err != nil {
+		fmt.Printf(RepoURLHostSwap, err)
+		return err
+	}
+	gitRepo.Spec.URL = replacement.String()
+	return nil
+}
 func transformAppRepoURLs(app *ArgoApplication, targetHost string, pushUsername string) error {
 	// update repoURL for each source
 	for idx, source := range app.Spec.Sources {
@@ -296,5 +377,6 @@ func main() {
 	module.Set("podTransform", js.FuncOf(podTransform))
 	module.Set("repoURLTransform", js.FuncOf(repoURLTransform))
 	module.Set("argoSecretTransform", js.FuncOf(argoSecretTransform))
+	module.Set("fluxRepoTransform", js.FuncOf(fluxRepoTransform))
 	<-done
 }

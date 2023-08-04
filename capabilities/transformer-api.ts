@@ -24,6 +24,20 @@ export class TransformerAPI {
         pullUsername
       )
       }   
+  mutateFluxApp(
+    app: string,
+    request: string,
+    targetHost: string,
+    pushUsername: string
+  ): string {
+    // @ts-ignore
+    return zarfTransform.fluxRepoTransform(
+      app,
+      request,
+      targetHost,
+      pushUsername
+    );    
+  }
   mutateArgoApp(
     app: string,
     request: string,
@@ -96,6 +110,28 @@ export class TransformerAPI {
       Log.error("Error calling repoURLTransform", err);
     }
     return transformedSecret;
+  }
+  transformFluxApp(
+    app: a.GenericKind,
+    request: Request,
+    targetHost: string,
+    pushUsername: string
+  ): string {
+    let transformedApp: string;
+    if (!this.instance) {
+      throw new Error("WebAssembly module not loaded or initialized.");
+    }
+    try {
+      transformedApp = this.mutateFluxApp(
+        JSON.stringify(app),
+        JSON.stringify(request),
+        targetHost,
+        pushUsername
+      );
+    } catch (err) {
+      Log.error("Error calling fluxRepoTransform", err);
+    }
+    return transformedApp;
   }
   transformArgoApp(
     app: a.GenericKind,

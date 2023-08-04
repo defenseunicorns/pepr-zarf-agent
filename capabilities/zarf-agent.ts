@@ -1,7 +1,6 @@
 import { Capability, a, Log } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
-import { argoRepoSecretDataDecoder, argoSecretLabels } from "./helpers";
 import { TransformerAPI } from "./transformer-api";
 
 /**
@@ -40,22 +39,30 @@ const _transformer = new TransformerAPI();
  * This Capability Action fetches the `zarf-state` and `private-registry` secrets. It transformed
  * pods and Argo Apps to meet internal requirements for working with Zarf.
  */
-When(a.Secret)
-  .IsCreated()
-  .InNamespace("argocd")
-  .WithLabel("argocd.argoproj.io/secret-type","repository")
-  .Then(secret => {
-      secret.Raw = JSON.parse(
-        _transformer.transformArgoSecret(
-          secret.Raw,
-          secret.Request,
+
+When(a.GenericKind, {
+  group: "source.toolkit.fluxcd.io",
+  version: "v1beta2",
+  kind: "GitRepository",
+})
+  .IsCreatedOrUpdated()
+  .Then(gitRepo => {
+    // delete gitRepo.Raw?.finalizers
+    try {
+      gitRepo.Raw = JSON.parse(
+        _transformer.transformFluxApp(
+          gitRepo.Raw,
+          gitRepo.Request,
           _initSecrets.zarfStateSecret.gitServer.address,
-          _initSecrets.zarfStateSecret.gitServer.pushUsername,
-          _initSecrets.zarfStateSecret.gitServer.pullPassword,
-          _initSecrets.zarfStateSecret.gitServer.pullUsername
+          _initSecrets.zarfStateSecret.gitServer.pushUsername
         )
       )
+      console.log(JSON.stringify(gitRepo.Raw,undefined,2))
+    } catch (err) {
+      Log.error("Error transforming gitRepo", err)
+    }
   })
+
 When(a.GenericKind, {
   group: "argoproj.io",
   version: "v1alpha1",
@@ -76,7 +83,6 @@ When(a.GenericKind, {
     } catch (err) {
       Log.error("Error transforming app", err)
     }
-
   })
 
 When(a.Pod)
@@ -95,5 +101,21 @@ When(a.Pod)
     } catch (err) {
       Log.error("Error transforming pod", err);
     }
-    console.log("pod", JSON.stringify(pod, undefined, 2));
   });
+
+When(a.Secret)
+  .IsCreated()
+  .InNamespace("argocd")
+  .WithLabel("argocd.argoproj.io/secret-type", "repository")
+  .Then(secret => {
+    secret.Raw = JSON.parse(
+      _transformer.transformArgoSecret(
+        secret.Raw,
+        secret.Request,
+        _initSecrets.zarfStateSecret.gitServer.address,
+        _initSecrets.zarfStateSecret.gitServer.pushUsername,
+        _initSecrets.zarfStateSecret.gitServer.pullPassword,
+        _initSecrets.zarfStateSecret.gitServer.pullUsername
+      )
+    )
+  })

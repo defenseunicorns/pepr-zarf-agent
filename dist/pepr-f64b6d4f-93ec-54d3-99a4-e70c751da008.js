@@ -819,6 +819,14 @@ var TransformerAPI = class {
       pullUsername
     );
   }
+  mutateFluxApp(app, request, targetHost, pushUsername) {
+    return zarfTransform.fluxRepoTransform(
+      app,
+      request,
+      targetHost,
+      pushUsername
+    );
+  }
   mutateArgoApp(app, request, targetHost, pushUsername) {
     return zarfTransform.repoURLTransform(
       app,
@@ -871,6 +879,23 @@ var TransformerAPI = class {
       import_pepr4.Log.error("Error calling repoURLTransform", err);
     }
     return transformedSecret;
+  }
+  transformFluxApp(app, request, targetHost, pushUsername) {
+    let transformedApp;
+    if (!this.instance) {
+      throw new Error("WebAssembly module not loaded or initialized.");
+    }
+    try {
+      transformedApp = this.mutateFluxApp(
+        JSON.stringify(app),
+        JSON.stringify(request),
+        targetHost,
+        pushUsername
+      );
+    } catch (err) {
+      import_pepr4.Log.error("Error calling fluxRepoTransform", err);
+    }
+    return transformedApp;
   }
   transformArgoApp(app, request, targetHost, pushUsername) {
     let transformedApp;
@@ -925,17 +950,24 @@ var _transformer = new TransformerAPI();
   await _initSecrets.getZarfPrivateRegistrySecret();
   await _transformer.run();
 })();
-When(import_pepr5.a.Secret).IsCreated().InNamespace("argocd").WithLabel("argocd.argoproj.io/secret-type", "repository").Then((secret) => {
-  secret.Raw = JSON.parse(
-    _transformer.transformArgoSecret(
-      secret.Raw,
-      secret.Request,
-      _initSecrets.zarfStateSecret.gitServer.address,
-      _initSecrets.zarfStateSecret.gitServer.pushUsername,
-      _initSecrets.zarfStateSecret.gitServer.pullPassword,
-      _initSecrets.zarfStateSecret.gitServer.pullUsername
-    )
-  );
+When(import_pepr5.a.GenericKind, {
+  group: "source.toolkit.fluxcd.io",
+  version: "v1beta2",
+  kind: "GitRepository"
+}).IsCreatedOrUpdated().Then((gitRepo) => {
+  try {
+    gitRepo.Raw = JSON.parse(
+      _transformer.transformFluxApp(
+        gitRepo.Raw,
+        gitRepo.Request,
+        _initSecrets.zarfStateSecret.gitServer.address,
+        _initSecrets.zarfStateSecret.gitServer.pushUsername
+      )
+    );
+    console.log(JSON.stringify(gitRepo.Raw, void 0, 2));
+  } catch (err) {
+    import_pepr5.Log.error("Error transforming gitRepo", err);
+  }
 });
 When(import_pepr5.a.GenericKind, {
   group: "argoproj.io",
@@ -970,7 +1002,18 @@ When(import_pepr5.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
   } catch (err) {
     import_pepr5.Log.error("Error transforming pod", err);
   }
-  console.log("pod", JSON.stringify(pod, void 0, 2));
+});
+When(import_pepr5.a.Secret).IsCreated().InNamespace("argocd").WithLabel("argocd.argoproj.io/secret-type", "repository").Then((secret) => {
+  secret.Raw = JSON.parse(
+    _transformer.transformArgoSecret(
+      secret.Raw,
+      secret.Request,
+      _initSecrets.zarfStateSecret.gitServer.address,
+      _initSecrets.zarfStateSecret.gitServer.pushUsername,
+      _initSecrets.zarfStateSecret.gitServer.pullPassword,
+      _initSecrets.zarfStateSecret.gitServer.pullUsername
+    )
+  );
 });
 
 // pepr.ts

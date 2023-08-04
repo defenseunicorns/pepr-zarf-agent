@@ -12,6 +12,4 @@ export declare function ParseAnyReference(imageString: string): {
 export declare function ImageTransformHost(targetHost: string, srcReference: string): string;
 export declare function ImageTransformHostWithoutChecksum(targetHost: string, srcReference: string): string;
 export declare function InitSecretsReady(_initSecrets: IInitSecret): boolean;
-export declare function argoRepoSecretDataDecoder(encodedString: string): string;
-export declare function argoSecretLabels(req: PeprRequest<a.Secret>): boolean;
 //# sourceMappingURL=helpers.d.ts.map

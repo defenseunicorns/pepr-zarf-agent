@@ -1,0 +1,72 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: "2023-08-04T19:51:31Z"
+  generation: 1
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008
+  resourceVersion: "997"
+  uid: 48bad181-18cb-497f-a327-14011e810a08
+webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlDdERDQ0FaeWdBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBY01Sb3dHQVlEVlFRREV4RlFaWEJ5DQpJRVZ3YUdWdFpYSmhiQ0JEUVRBZUZ3MHlNekE0TURReE9UVXhNalJhRncweU5EQTRNRFF4T1RVeE1qUmFNQUF3DQpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFERlJlMms5cDc3ZG9YWEJoQUh0RFlCDQovZWh3T3R1WjlRQ0l6SDJxTlVlcFJWMFVYNGdKMTlJUjhsbzdSRjZqZVZFRU1STVVMUktjeE5ub3lJNFMxVHBEDQo2dVMzeWlFRTdpby9kdlNqYWF2NUdvZmkwMjdCczdjMVJHYmhpdFNtQSt5eWZEOHFXWEZ0UWxkQlNrODd3WjVpDQpHclBvR0NNdXA3aCtVaEtrK1dXRFozMzhiRjBYNGF5N1dIUk1DU09mcGpDS3gxcGF4REtqdVpIYUFoSm14QzBtDQppNEVxOHQ1OUtmeFRrRHFXK3d0TEtLcFA2bkFvTGp1V2lLTVdJeGRnQjVzd2NkSytNVVFwNzRxYWw4SENSRTlnDQo4QVhna25WZjlyRzhvSmdZUFEzQjV5QWd4YVlhY0VuSExWN0UwYXBFUEdScFRsNDdDeTA1d3dSU1BqSE9MZ25ODQpBZ01CQUFHakhUQWJNQXdHQTFVZEV3UUZNQU1CQWY4d0N3WURWUjBQQkFRREFnTDBNQTBHQ1NxR1NJYjNEUUVCDQpDd1VBQTRJQkFRQ0pGeG04SHZzTG1KWVNVUHZpT3VUVmN5K0hCQWpPRUJBRTdudklNNERKZndMVDl3bDJDNk9uDQpPYVVDU3p6ZFk0aklRTEJpSmZGTHRYSkFkcFZKSmdINXFqNE1GdzY4MTB6aTBCT1lwSXBIeC9Fbnh1ajF6OURuDQpmY2MzTWFIWlQ3UlZMT210Z3RNYjdZbGdYSHcyRG1PUHlSekxtZjRkNXIvUWhLM05CUjVtRWxlRWhzc3pMdkUrDQpNaVJLRytqdmlTV1ZoNkRuUWV4bEJ2L0YvOWNZVXRWdGltQWRxQ3liYjVKQmJTWkFJbHNwSkxXbHdrbEN3MUIyDQpiT0hkc1lZZURkQTNKUFdCYUpOQ2RnL0FsVDZWdWJSTUcya2dzeVNLZUZTeWhiVUw3dHhVVzA1U1hJZ2hsZlAwDQpBZ24yQkFqYXlzV3I3dUdUWUx6ZDlFMjViSk9VQUd3MA0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ0K
+    url: https://host.k3d.internal:3000/mutate
+  failurePolicy: Ignore
+  matchPolicy: Equivalent
+  name: pepr-f64b6d4f-93ec-54d3-99a4-e70c751da008.pepr.dev
+  namespaceSelector:
+    matchExpressions:
+    - key: pepr.dev
+      operator: NotIn
+      values:
+      - ignore
+  objectSelector:
+    matchExpressions:
+    - key: pepr.dev
+      operator: NotIn
+      values:
+      - ignore
+  reinvocationPolicy: Never
+  rules:
+  - apiGroups:
+    - source.toolkit.fluxcd.io
+    apiVersions:
+    - v1beta2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - gitrepositories
+    scope: '*'
+  - apiGroups:
+    - argoproj.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    resources:
+    - applications
+    scope: '*'
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - pods
+    scope: '*'
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - secrets
+    scope: '*'
+  sideEffects: None
+  timeoutSeconds: 30
