@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"syscall/js"
 
 	// appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -11,6 +12,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	// appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+
 	"github.com/defenseunicorns/zarf/src/pkg/transform"
 )
 
@@ -19,6 +21,23 @@ const RepoURLHostSwap = "Unable to swap repoURL for (%s)"
 const ArgoSecretSwap = "Unable to swap argo secret (%s)"
 const FluxSecretSwap = "Unable to swap flux secret (%s)"
 const ZarfGitServerSecretName = "private-git-server"
+const AgentErrHostnameMatch = "failed to complete hostname matching: %w"
+
+// DoHostnamesMatch returns a boolean indicating if the hostname of two different URLs are the same.
+func DoHostnamesMatch(url1 string, url2 string) (bool, error) {
+	parsedURL1, err := url.Parse(url1)
+	if err != nil {
+
+		return false, err
+	}
+	parsedURL2, err := url.Parse(url2)
+	if err != nil {
+
+		return false, err
+	}
+
+	return parsedURL1.Hostname() == parsedURL2.Hostname(), nil
+}
 
 // SecretRef contains the name used to reference a git repository secret.
 type SecretRef struct {
@@ -90,14 +109,25 @@ func fluxRepoTransform(this js.Value, args []js.Value) interface{} {
 		log.Fatal(err)
 	}
 
-	// Mutate the repoURLs on the ArgoApp
-	err = transformFluxRepoURLs(gitRepo, targetHost, pushUsername)
+	// check if GitRepoURL is already updated
+	isPatched, err := DoHostnamesMatch(targetHost, gitRepo.Spec.URL)
 	if err != nil {
-		fmt.Println("error mutating repoURLs on the ArgoApp")
-		return err
+		return fmt.Errorf(AgentErrHostnameMatch, err)
+	}
+	if !isPatched {
+		// Mutate the repoURLs on the GitRepo
+		err = transformFluxRepoURLs(gitRepo, targetHost, pushUsername)
+		if err != nil {
+			fmt.Println("error mutating repoURLs on the ArgoApp")
+			return err
+		}
 	}
 
-	gitRepo.Spec.SecretRef = SecretRef{Name: ZarfGitServerSecretName}
+	// check if GitRepo.secretRef is already updated
+	if gitRepo.Spec.SecretRef.Name != ZarfGitServerSecretName {
+		gitRepo.Spec.SecretRef = SecretRef{Name: ZarfGitServerSecretName}
+	}
+
 	spec, ok := originalFluxRepoMap["spec"].(map[string]interface{})
 	if !ok {
 		fmt.Println("Failed to access .spec")

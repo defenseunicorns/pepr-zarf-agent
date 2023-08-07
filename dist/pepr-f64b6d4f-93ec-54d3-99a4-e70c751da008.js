@@ -934,7 +934,7 @@ When(import_pepr4.a.GenericKind, {
   version: "v1beta2",
   kind: "GitRepository",
   plural: "gitrepositories"
-}).IsCreated().Then((gitRepo) => {
+}).IsCreatedOrUpdated().Then((gitRepo) => {
   delete gitRepo.Raw?.finalizers;
   try {
     gitRepo.Raw = JSON.parse(

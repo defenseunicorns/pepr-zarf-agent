@@ -51,7 +51,7 @@ When(a.GenericKind, {
   kind: "GitRepository",
   plural: "gitrepositories",
 })
-  .IsCreated()
+  .IsCreatedOrUpdated()
   .Then(gitRepo => {
     delete gitRepo.Raw?.finalizers
     try {
