@@ -16,18 +16,23 @@ export const ZarfAgent = new Capability({
 const { When } = ZarfAgent;
 
 /**
- * ---------------------------------------------------------------------------------------------------
  * Initialize InitSecrets & TransformerAPI
  */
 const _initSecrets = new InitSecrets(new K8sAPI());
 const _transformer = new TransformerAPI();
-// Initialize TransformerAPI & fetch Secrets
-// Watch will take over secrets eventually
+
+/**
+ * Initialize TransformerAPI & fetch Secrets
+ */
 (async () => {
   Log.SetLogLevel("debug");
-  await _initSecrets.getZarfStateSecret();
-  await _initSecrets.getZarfPrivateRegistrySecret();
-  await _transformer.run();
+
+  try {
+    await Promise.all([_initSecrets.getZarfStateSecret(), _initSecrets.getZarfPrivateRegistrySecret(), _transformer.run()]);
+    Log.info("Initialized TransformerAPI and fetched Secrets")
+  } catch (error) {
+    Log.error('Could not initialize TransformerAPI and fetch Secrets:', error);
+  }
 })()
 
 
@@ -44,10 +49,11 @@ When(a.GenericKind, {
   group: "source.toolkit.fluxcd.io",
   version: "v1beta2",
   kind: "GitRepository",
+  plural: "gitrepositories",
 })
-  .IsCreatedOrUpdated()
+  .IsCreated()
   .Then(gitRepo => {
-    // delete gitRepo.Raw?.finalizers
+    delete gitRepo.Raw?.finalizers
     try {
       gitRepo.Raw = JSON.parse(
         _transformer.transformFluxApp(
@@ -66,7 +72,7 @@ When(a.GenericKind, {
 When(a.GenericKind, {
   group: "argoproj.io",
   version: "v1alpha1",
-  kind: "Application",//(s) double check this
+  kind: "Application",
 })
   .IsCreated()
   .Then(app => {
@@ -89,7 +95,6 @@ When(a.Pod)
   .IsCreatedOrUpdated()
   .Then(async pod => {
     try {
-      // Parse output of transformPod to replace pod.Raw
       pod.Raw = JSON.parse(
         _transformer.transformPod(
           pod.Raw,

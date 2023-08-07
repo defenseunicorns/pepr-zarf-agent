@@ -2,7 +2,7 @@ var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
 // pepr.ts
-var import_pepr6 = require("pepr");
+var import_pepr5 = require("pepr");
 
 // package.json
 var package_default = {
@@ -610,7 +610,7 @@ var package_default = {
 })();
 
 // capabilities/zarf-agent.ts
-var import_pepr5 = require("pepr");
+var import_pepr4 = require("pepr");
 
 // capabilities/kubernetes-api.ts
 var import_pepr = require("pepr");
@@ -739,7 +739,6 @@ var K8sAPI = class {
 __name(K8sAPI, "K8sAPI");
 
 // capabilities/secrets/initSecrets.ts
-var import_pepr3 = require("pepr");
 var InitSecrets = class {
   k8sApi;
   zarfStateSecretName = "zarf-state";
@@ -755,16 +754,6 @@ var InitSecrets = class {
   constructor(k8sApi) {
     this.k8sApi = k8sApi;
   }
-  decodeBase64(secret, key) {
-    if (!secret.data) {
-      throw new Error("Data is missing in secret");
-    }
-    if (!secret.data[key]) {
-      throw new Error(`Key ${key} is missing in secret`);
-    }
-    return Buffer.from(secret.data[key], "base64").toString("utf-8");
-  }
-  // TODO type this
   async getZarfStateSecret() {
     const secretData = await this.k8sApi.getSecretValues(
       this.zarfStateSecretName,
@@ -774,7 +763,6 @@ var InitSecrets = class {
     const zarfState = JSON.parse(secretData.state);
     this.zarfStateSecret = zarfState;
     this.zarfStateSecretData = secretData;
-    import_pepr3.Log.info("Zarf State Secret", JSON.stringify(zarfState, void 0, 2));
     return zarfState;
   }
   async getZarfPrivateRegistrySecret() {
@@ -786,25 +774,13 @@ var InitSecrets = class {
     const authData = JSON.parse(secretData[".dockerconfigjson"]);
     this.privateRegistrySecret = authData;
     this.privateRegistrySecretData = secretData;
-    import_pepr3.Log.info("Private registry secret", JSON.stringify(authData, void 0, 2));
     return authData;
-  }
-  async createOrUpdateSecret(name, namespace, secretData) {
-    await this.k8sApi.createOrUpdateSecret(name, namespace, secretData);
-  }
-  async patchPodImagePullSecret(name, namespace) {
-    await this.k8sApi.addImagePullSecretToPod(
-      name,
-      namespace,
-      this.privateRegistrySecretName
-    );
-    return;
   }
 };
 __name(InitSecrets, "InitSecrets");
 
 // capabilities/transformer-api.ts
-var import_pepr4 = require("pepr");
+var import_pepr3 = require("pepr");
 var import_fs = require("fs");
 var TransformerAPI = class {
   go;
@@ -857,7 +833,7 @@ var TransformerAPI = class {
     try {
       await this.instantiateWebAssembly();
     } catch (err) {
-      import_pepr4.Log.error("Error instantiating wasm module", err.toString());
+      import_pepr3.Log.error("Error instantiating wasm module", err.toString());
       return;
     }
   }
@@ -876,7 +852,7 @@ var TransformerAPI = class {
         pullUsername
       );
     } catch (err) {
-      import_pepr4.Log.error("Error calling repoURLTransform", err);
+      import_pepr3.Log.error("Error calling repoURLTransform", err);
     }
     return transformedSecret;
   }
@@ -893,7 +869,7 @@ var TransformerAPI = class {
         pushUsername
       );
     } catch (err) {
-      import_pepr4.Log.error("Error calling fluxRepoTransform", err);
+      import_pepr3.Log.error("Error calling fluxRepoTransform", err);
     }
     return transformedApp;
   }
@@ -910,7 +886,7 @@ var TransformerAPI = class {
         pushUsername
       );
     } catch (err) {
-      import_pepr4.Log.error("Error calling repoURLTransform", err);
+      import_pepr3.Log.error("Error calling repoURLTransform", err);
     }
     return transformedApp;
   }
@@ -927,7 +903,7 @@ var TransformerAPI = class {
         targetHost
       );
     } catch (err) {
-      import_pepr4.Log.error("Error calling podTransform", err);
+      import_pepr3.Log.error("Error calling podTransform", err);
     }
     return transformedPod;
   }
@@ -935,7 +911,7 @@ var TransformerAPI = class {
 __name(TransformerAPI, "TransformerAPI");
 
 // capabilities/zarf-agent.ts
-var ZarfAgent = new import_pepr5.Capability({
+var ZarfAgent = new import_pepr4.Capability({
   name: "zarf-agent",
   description: "A mutating webhook for Zarf.",
   namespaces: []
@@ -945,16 +921,21 @@ var { When } = ZarfAgent;
 var _initSecrets = new InitSecrets(new K8sAPI());
 var _transformer = new TransformerAPI();
 (async () => {
-  import_pepr5.Log.SetLogLevel("debug");
-  await _initSecrets.getZarfStateSecret();
-  await _initSecrets.getZarfPrivateRegistrySecret();
-  await _transformer.run();
+  import_pepr4.Log.SetLogLevel("debug");
+  try {
+    await Promise.all([_initSecrets.getZarfStateSecret(), _initSecrets.getZarfPrivateRegistrySecret(), _transformer.run()]);
+    import_pepr4.Log.info("Initialized TransformerAPI and fetched Secrets");
+  } catch (error) {
+    import_pepr4.Log.error("Could not initialize TransformerAPI and fetch Secrets:", error);
+  }
 })();
-When(import_pepr5.a.GenericKind, {
+When(import_pepr4.a.GenericKind, {
   group: "source.toolkit.fluxcd.io",
   version: "v1beta2",
-  kind: "GitRepository"
-}).IsCreatedOrUpdated().Then((gitRepo) => {
+  kind: "GitRepository",
+  plural: "gitrepositories"
+}).IsCreated().Then((gitRepo) => {
+  delete gitRepo.Raw?.finalizers;
   try {
     gitRepo.Raw = JSON.parse(
       _transformer.transformFluxApp(
@@ -966,14 +947,13 @@ When(import_pepr5.a.GenericKind, {
     );
     console.log(JSON.stringify(gitRepo.Raw, void 0, 2));
   } catch (err) {
-    import_pepr5.Log.error("Error transforming gitRepo", err);
+    import_pepr4.Log.error("Error transforming gitRepo", err);
   }
 });
-When(import_pepr5.a.GenericKind, {
+When(import_pepr4.a.GenericKind, {
   group: "argoproj.io",
   version: "v1alpha1",
   kind: "Application"
-  //(s) double check this
 }).IsCreated().Then((app) => {
   delete app.Raw?.finalizers;
   try {
@@ -986,10 +966,10 @@ When(import_pepr5.a.GenericKind, {
       )
     );
   } catch (err) {
-    import_pepr5.Log.error("Error transforming app", err);
+    import_pepr4.Log.error("Error transforming app", err);
   }
 });
-When(import_pepr5.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
+When(import_pepr4.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
   try {
     pod.Raw = JSON.parse(
       _transformer.transformPod(
@@ -1000,10 +980,10 @@ When(import_pepr5.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
       )
     );
   } catch (err) {
-    import_pepr5.Log.error("Error transforming pod", err);
+    import_pepr4.Log.error("Error transforming pod", err);
   }
 });
-When(import_pepr5.a.Secret).IsCreated().InNamespace("argocd").WithLabel("argocd.argoproj.io/secret-type", "repository").Then((secret) => {
+When(import_pepr4.a.Secret).IsCreated().InNamespace("argocd").WithLabel("argocd.argoproj.io/secret-type", "repository").Then((secret) => {
   secret.Raw = JSON.parse(
     _transformer.transformArgoSecret(
       secret.Raw,
@@ -1017,7 +997,7 @@ When(import_pepr5.a.Secret).IsCreated().InNamespace("argocd").WithLabel("argocd.
 });
 
 // pepr.ts
-new import_pepr6.PeprModule(package_default, [
+new import_pepr5.PeprModule(package_default, [
   // "HelloPepr" is a demo capability that is included with Pepr. Comment or delete the line below to remove it.
   // HelloPepr,
   ZarfAgent
