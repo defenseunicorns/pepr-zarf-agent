@@ -180,58 +180,82 @@ func repoURLTransform(this js.Value, args []js.Value) interface{} {
 		log.Fatal(err)
 	}
 
-	// Mutate the repoURLs on the ArgoApp
-	err = transformAppRepoURLs(app, targetHost, pushUsername)
+	// check if update is needed
+	sourcesRepoIsPatched := true
+	sourceRepoIsPatched, err := DoHostnamesMatch(app.Spec.Source.RepoURL, targetHost)
 	if err != nil {
-		fmt.Println("error mutating repoURLs on the ArgoApp")
-		return err
+		return fmt.Errorf(AgentErrHostnameMatch, err)
 	}
-
-	// Marshall the updated ArgoApp to bytes
-	updatedArgoBytes, err = json.Marshal(app)
-	if err != nil {
-		fmt.Println("Error marshalling updated ArgoApp to bytes")
-		return err
-	}
-
-	err = json.Unmarshal(updatedArgoBytes, &updatedArgoMap)
-	if err != nil {
-		fmt.Println("Error unmarshalling updatedArgoBytes to updatedArgoMap")
-		return err
-	}
-
-	sources, ok := originalArgoMap["spec"].(map[string]interface{})["sources"].([]interface{})
-	if !ok {
-		fmt.Println("Failed to extract original sources from the object.")
-		return fmt.Errorf("Failed to extract original sources from the object.")
-	}
-	for i, source := range sources {
-		sourceMap, ok := source.(map[string]interface{})
-		if !ok {
-			fmt.Println("Failed to extract source map.")
-			continue
-		}
-		sourceMap["repoURL"] = app.Spec.Sources[i].RepoURL
-
-	}
-
-	if app.Spec.Source.RepoURL != "" {
-		if spec, ok := originalArgoMap["spec"].(map[string]interface{}); ok {
-			if source, ok := spec["source"].(map[string]interface{}); ok {
-				source["repoURL"] = app.Spec.Source.RepoURL
+	if len(app.Spec.Sources) > 0 {
+		for _, source := range app.Spec.Sources {
+			patched, err := DoHostnamesMatch(source.RepoURL, targetHost)
+			if err != nil {
+				return fmt.Errorf(AgentErrHostnameMatch, err)
+			}
+			if !patched {
+				sourcesRepoIsPatched = false
 			}
 		}
 	}
 
-	appBytes, err := json.MarshalIndent(originalArgoMap, "", "  ")
-	if err != nil {
-		fmt.Println("Error:", err)
-		return err
-	}
+	// if the sourceRepo needs patching and its not empty OR if the sources need patching
+	if !sourceRepoIsPatched && app.Spec.Source.RepoURL != "" || !sourcesRepoIsPatched {
+		// Mutate the repoURLs on the ArgoApp
+		err = transformAppRepoURLs(app, targetHost, pushUsername)
+		if err != nil {
+			fmt.Println("error mutating repoURLs on the ArgoApp")
+			return err
+		}
 
-	// Convert the JSON bytes to a string
-	AppString := string(appBytes)
-	return string(AppString)
+		// Marshall the updated ArgoApp to bytes
+		updatedArgoBytes, err = json.Marshal(app)
+		if err != nil {
+			fmt.Println("Error marshalling updated ArgoApp to bytes")
+			return err
+		}
+
+		err = json.Unmarshal(updatedArgoBytes, &updatedArgoMap)
+		if err != nil {
+			fmt.Println("Error unmarshalling updatedArgoBytes to updatedArgoMap")
+			return err
+		}
+
+		sources, ok := originalArgoMap["spec"].(map[string]interface{})["sources"].([]interface{})
+		if !ok {
+			fmt.Println("Failed to extract original sources from the object.")
+			return fmt.Errorf("Failed to extract original sources from the object.")
+		}
+		for i, source := range sources {
+			sourceMap, ok := source.(map[string]interface{})
+			if !ok {
+				fmt.Println("Failed to extract source map.")
+				continue
+			}
+			sourceMap["repoURL"] = app.Spec.Sources[i].RepoURL
+
+		}
+
+		if app.Spec.Source.RepoURL != "" {
+			if spec, ok := originalArgoMap["spec"].(map[string]interface{}); ok {
+				if source, ok := spec["source"].(map[string]interface{}); ok {
+					source["repoURL"] = app.Spec.Source.RepoURL
+				}
+			}
+		}
+
+		appBytes, err := json.MarshalIndent(originalArgoMap, "", "  ")
+		if err != nil {
+			fmt.Println("Error:", err)
+			return err
+		}
+
+		// Convert the JSON bytes to a string
+		AppString := string(appBytes)
+		return string(AppString)
+
+	}
+	return rawRequest
+
 }
 
 func argoSecretTransform(this js.Value, args []js.Value) interface{} {
@@ -251,15 +275,24 @@ func argoSecretTransform(this js.Value, args []js.Value) interface{} {
 		fmt.Println("error unmarshalling to secret", err)
 	}
 
-	secretURL, err := transform.GitURL(targetHost, secret.Data.Url, pushUsername)
+	// check if update is needed
+	isPatched, err := DoHostnamesMatch(secret.Data.Url, targetHost)
 	if err != nil {
-		fmt.Printf(ArgoSecretSwap, err)
-		return err
+		return fmt.Errorf(AgentErrHostnameMatch, err)
+	}
+	if !isPatched {
+
+		secretURL, err := transform.GitURL(targetHost, secret.Data.Url, pushUsername)
+		if err != nil {
+			fmt.Printf(ArgoSecretSwap, err)
+			return err
+		}
+
+		secret.Data.Url = secretURL.String()
+		secret.Data.Password = pullPassword
+		secret.Data.Username = pullUsername
 	}
 
-	secret.Data.Url = secretURL.String()
-	secret.Data.Password = pullPassword
-	secret.Data.Username = pullUsername
 	secretBytes, err := json.MarshalIndent(secret, "", "  ")
 	if err != nil {
 		fmt.Println("Error marshal secret to bytes:", err)

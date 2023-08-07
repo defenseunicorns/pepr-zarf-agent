@@ -954,7 +954,7 @@ When(import_pepr4.a.GenericKind, {
   group: "argoproj.io",
   version: "v1alpha1",
   kind: "Application"
-}).IsCreated().Then((app) => {
+}).IsCreatedOrUpdated().Then((app) => {
   delete app.Raw?.finalizers;
   try {
     app.Raw = JSON.parse(
@@ -983,7 +983,7 @@ When(import_pepr4.a.Pod).IsCreatedOrUpdated().Then(async (pod) => {
     import_pepr4.Log.error("Error transforming pod", err);
   }
 });
-When(import_pepr4.a.Secret).IsCreated().InNamespace("argocd").WithLabel("argocd.argoproj.io/secret-type", "repository").Then((secret) => {
+When(import_pepr4.a.Secret).IsCreatedOrUpdated().InNamespace("argocd").WithLabel("argocd.argoproj.io/secret-type", "repository").Then((secret) => {
   secret.Raw = JSON.parse(
     _transformer.transformArgoSecret(
       secret.Raw,

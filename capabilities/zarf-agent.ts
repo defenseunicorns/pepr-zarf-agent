@@ -74,7 +74,7 @@ When(a.GenericKind, {
   version: "v1alpha1",
   kind: "Application",
 })
-  .IsCreated()
+  .IsCreatedOrUpdated()
   .Then(app => {
     delete app.Raw?.finalizers
     try {
@@ -109,7 +109,7 @@ When(a.Pod)
   });
 
 When(a.Secret)
-  .IsCreated()
+  .IsCreatedOrUpdated()
   .InNamespace("argocd")
   .WithLabel("argocd.argoproj.io/secret-type", "repository")
   .Then(secret => {
