@@ -25,7 +25,7 @@ export class InitSecrets {
     const secretData = await this.k8sApi.getSecretValues(
       this.zarfStateSecretName,
       this.zarfStateSecretNamespace,
-      this.zarfStateSecretKeys
+      this.zarfStateSecretKeys,
     );
 
     const zarfState: ZarfState = JSON.parse(secretData.state);
@@ -38,7 +38,7 @@ export class InitSecrets {
     const secretData = await this.k8sApi.getSecretValues(
       this.privateRegistrySecretName,
       this.privateRegistrySecretNamespace,
-      this.privateRegistrySecretKeys
+      this.privateRegistrySecretKeys,
     );
     const authData: AuthData = JSON.parse(secretData[".dockerconfigjson"]);
     this.privateRegistrySecret = authData;
