@@ -1,54 +1,26 @@
-import { Log } from "pepr";
-import {
-  AppsV1Api,
-  CoreV1Api,
-  KubeConfig,
-  V1Secret,
-  PatchUtils,
-} from "@kubernetes/client-node";
-
-import { fetchStatus } from "pepr";
+import { Log, K8s, kind } from "pepr";
 
 export class K8sAPI {
-  k8sApi: CoreV1Api;
-  k8sAppsV1Api: AppsV1Api;
-
-  constructor() {
-    const kc = new KubeConfig();
-    kc.loadFromDefault();
-    this.k8sApi = kc.makeApiClient(CoreV1Api);
-    this.k8sAppsV1Api = kc.makeApiClient(AppsV1Api);
-  }
+  constructor() {}
 
   async addImagePullSecretToPod(
     name: string,
     namespace: string,
-    secretName: string
+    secretName: string,
   ): Promise<void> {
     try {
-      const patch = [
-        {
-          op: "replace",
-          path: "/spec/imagePullSecrets",
-          value: [
-            {
-              name: secretName,
-            },
-          ],
-        },
-      ];
-      this.k8sApi
-        .patchNamespacedPod(
-          name,
-          namespace,
-          patch,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { headers: { "content-type": "application/json-patch+json" } }
-        )
+      K8s(kind.Pod, { name: name, namespace: namespace })
+        .Patch([
+          {
+            op: "replace",
+            path: "/spec/imagePullSecrets",
+            value: [
+              {
+                name: secretName,
+              },
+            ],
+          },
+        ])
         .then(() => {
           Log.info("Pod patched successfully.");
         })
@@ -79,13 +51,13 @@ export class K8sAPI {
     //   Log.error("Could not add imagePullSecret to pod", err);
     // }
   }
+  // TODO: replace with a Secret Class that properly handles the base64 encoding
   async getSecretValues(
     name: string,
     namespace: string,
-    keys: string[]
+    keys: string[],
   ): Promise<{ [key: string]: string }> {
-    const response = await this.k8sApi.readNamespacedSecret(name, namespace);
-    const secret = response.body.data;
+    const secret = await K8s(kind.Secret).InNamespace(namespace).Get(name);
     const secretValues: { [key: string]: string } = {};
 
     if (secret) {
@@ -93,7 +65,7 @@ export class K8sAPI {
         if (secret[key]) {
           // Decode the base64 encoded secret value
           const decodedValue = Buffer.from(secret[key], "base64").toString(
-            "utf-8"
+            "utf-8",
           );
           secretValues[key] = decodedValue;
         } else {
@@ -145,13 +117,14 @@ export class K8sAPI {
   //   return matchingSecrets;
   // }
 
+  // TODO: replace with a Secret Class that properly handles the base64 encoding
   async createOrUpdateSecret(
     name: string,
     namespace: string,
-    secretData: Record<string, string>
+    secretData: Record<string, string>,
   ) {
     // Prepare the Secret object
-    const secret: V1Secret = {
+    const secret: kind.Secret = {
       apiVersion: "v1",
       kind: "Secret",
       metadata: {
@@ -166,19 +139,6 @@ export class K8sAPI {
       secret.data[key] = Buffer.from(secretData[key]).toString("base64");
     }
 
-    try {
-      // Check if the Secret exists
-      await this.k8sApi.readNamespacedSecret(name, namespace);
-
-      // If the Secret exists, update it
-      await this.k8sApi.replaceNamespacedSecret(name, namespace, secret);
-    } catch (e) {
-      if (e.response && e.response.statusCode === fetchStatus.NOT_FOUND) {
-        // If the Secret doesn't exist, create it
-        await this.k8sApi.createNamespacedSecret(namespace, secret);
-      } else {
-        throw e;
-      }
-    }
+    await K8s(kind.Secret).Apply(secret, { force: true });
   }
 }

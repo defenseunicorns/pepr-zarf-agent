@@ -1,15 +1,15 @@
 import { IInitSecret } from "./api-types";
-import { Log, PeprRequest, a } from "pepr";
+import { Log, PeprMutateRequest, a } from "pepr";
 
 export function UpdateContainerImages(
-  pod: PeprRequest<a.Pod>,
-  address: string
+  pod: PeprMutateRequest<a.Pod>,
+  address: string,
 ) {
   try {
     // transform ephemeral container images
     if (pod.Raw?.spec?.ephemeralContainers !== undefined) {
       pod.Raw.spec.ephemeralContainers.map(container => {
-        let patched_image = ImageTransformHost(address, container.image);
+        const patched_image = ImageTransformHost(address, container.image);
         container.image = patched_image;
       });
     }
@@ -17,14 +17,14 @@ export function UpdateContainerImages(
     // transform ephemeral container images
     if (pod.Raw?.spec?.initContainers !== undefined) {
       pod.Raw.spec.initContainers.map(container => {
-        let patched_image = ImageTransformHost(address, container.image);
+        const patched_image = ImageTransformHost(address, container.image);
         container.image = patched_image;
       });
     }
 
     // transform container images
     pod.Raw.spec.containers.map(container => {
-      let patched_image = ImageTransformHost(address, container.image);
+      const patched_image = ImageTransformHost(address, container.image);
       container.image = patched_image;
     });
   } catch (err) {
@@ -52,7 +52,7 @@ function tableConstructedFromPolynomial(): number[] {
 }
 
 export function GetCRCHash(data: string): number {
-  let crc32Table = tableConstructedFromPolynomial();
+  const crc32Table = tableConstructedFromPolynomial();
   let crc = 0xffffffff; // Initial CRC value
 
   for (let i = 0; i < data.length; i++) {
@@ -76,6 +76,8 @@ export function ParseAnyReference(imageString: string) {
   }
 
   let [, host, path, tag, digest] = matches;
+  tag = tag || ""; // TODO: fix eslint hack
+  digest = digest || ""; // TODO: fix eslint hack
 
   if (imageString.split("/").length == 2) {
     path = host + "/" + path;
@@ -91,12 +93,13 @@ export function ParseAnyReference(imageString: string) {
 
 export function ImageTransformHost(
   targetHost: string,
-  srcReference: string
+  srcReference: string,
 ): string {
   let { host, path, tag, digest } = ParseAnyReference(srcReference);
+  digest = digest || ""; // TODO: fix eslint hack
 
-  let err = new Error(
-    "Unsupported image format. Please use fully qualified image name."
+  const err = new Error(
+    "Unsupported image format. Please use fully qualified image name.",
   );
 
   // check if there is a space in the srcReference
@@ -121,7 +124,7 @@ export function ImageTransformHost(
   }
 
   // step 3 - Generate a crc32 hash of the image host + name
-  let checksum = GetCRCHash(originalHost + "/" + path);
+  const checksum = GetCRCHash(originalHost + "/" + path);
 
   // step 4 - if tag is "" then use the latest
   if (tag === "") {
@@ -136,12 +139,13 @@ export function ImageTransformHost(
 }
 export function ImageTransformHostWithoutChecksum(
   targetHost: string,
-  srcReference: string
+  srcReference: string,
 ): string {
   let { host, path, tag, digest } = ParseAnyReference(srcReference);
+  digest = digest || ""; // TODO: fix eslint hack
 
-  let err = new Error(
-    "Unsupported image format. Please use fully qualified image name."
+  const err = new Error(
+    "Unsupported image format. Please use fully qualified image name.",
   );
 
   // check if there is a space in the srcReference
@@ -199,13 +203,13 @@ export function InitSecretsReady(_initSecrets: IInitSecret): boolean {
 //   image: string,
 //   registryUrl: string
 // ): string {
-//   let err = new Error(
+//   const err = new Error(
 //     "Unsupported image format. Please use fully qualified image name."
 //   );
 //   if (checkPattern(image, /^http/)) {
 //     throw err;
 //   }
-//   let image_sections = image.split("/");
+//   const image_sections = image.split("/");
 
 //   if (image_sections.length >= 3) {
 //     image_sections[0] = registryUrl;

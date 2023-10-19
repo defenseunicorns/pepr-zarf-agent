@@ -1,4 +1,4 @@
-import { V1ListMeta, V1ObjectMeta } from "@kubernetes/client-node";
+import { V1ObjectMeta } from "@kubernetes/client-node";
 
 // Image represents a config for an OCI image.
 export interface Image {

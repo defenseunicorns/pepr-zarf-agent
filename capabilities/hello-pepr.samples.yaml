@@ -42,6 +42,16 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: example-evil-cm
+  namespace: pepr-demo
+  annotations:
+    evil: 'true'
+data:
+  key: ex-evil-cm-val
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: example-3
   namespace: pepr-demo
   labels:

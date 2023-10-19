@@ -14,7 +14,7 @@ export class ErrorResponse extends jspb.Message {
   toObject(includeInstance?: boolean): ErrorResponse.AsObject;
   static toObject(
     includeInstance: boolean,
-    msg: ErrorResponse
+    msg: ErrorResponse,
   ): ErrorResponse.AsObject;
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> };
   static extensionsBinary: {
@@ -22,12 +22,12 @@ export class ErrorResponse extends jspb.Message {
   };
   static serializeBinaryToWriter(
     message: ErrorResponse,
-    writer: jspb.BinaryWriter
+    writer: jspb.BinaryWriter,
   ): void;
   static deserializeBinary(bytes: Uint8Array): ErrorResponse;
   static deserializeBinaryFromReader(
     message: ErrorResponse,
-    reader: jspb.BinaryReader
+    reader: jspb.BinaryReader,
   ): ErrorResponse;
 }
 
@@ -47,7 +47,7 @@ export class TransformRequest extends jspb.Message {
   toObject(includeInstance?: boolean): TransformRequest.AsObject;
   static toObject(
     includeInstance: boolean,
-    msg: TransformRequest
+    msg: TransformRequest,
   ): TransformRequest.AsObject;
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> };
   static extensionsBinary: {
@@ -55,12 +55,12 @@ export class TransformRequest extends jspb.Message {
   };
   static serializeBinaryToWriter(
     message: TransformRequest,
-    writer: jspb.BinaryWriter
+    writer: jspb.BinaryWriter,
   ): void;
   static deserializeBinary(bytes: Uint8Array): TransformRequest;
   static deserializeBinaryFromReader(
     message: TransformRequest,
-    reader: jspb.BinaryReader
+    reader: jspb.BinaryReader,
   ): TransformRequest;
 }
 
@@ -79,7 +79,7 @@ export class TransformResponse extends jspb.Message {
   toObject(includeInstance?: boolean): TransformResponse.AsObject;
   static toObject(
     includeInstance: boolean,
-    msg: TransformResponse
+    msg: TransformResponse,
   ): TransformResponse.AsObject;
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> };
   static extensionsBinary: {
@@ -87,12 +87,12 @@ export class TransformResponse extends jspb.Message {
   };
   static serializeBinaryToWriter(
     message: TransformResponse,
-    writer: jspb.BinaryWriter
+    writer: jspb.BinaryWriter,
   ): void;
   static deserializeBinary(bytes: Uint8Array): TransformResponse;
   static deserializeBinaryFromReader(
     message: TransformResponse,
-    reader: jspb.BinaryReader
+    reader: jspb.BinaryReader,
   ): TransformResponse;
 }
 

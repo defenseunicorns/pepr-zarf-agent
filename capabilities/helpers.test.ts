@@ -1,4 +1,4 @@
-import { PeprRequest, a } from "pepr";
+import { a, PeprMutateRequest } from "pepr";
 import { IInitSecret, Operation, Request } from "./api-types";
 import {
   // HasIgnoreLabels, Deprecated
@@ -23,8 +23,8 @@ class CreateInitSecret<T> {
     this.initSecrets = init;
   }
 }
-let operation: Operation = Operation.CREATE;
-let multiContainerPod: Request<a.Pod> = {
+const operation: Operation = Operation.CREATE;
+const multiContainerPod: Request<a.Pod> = {
   operation: operation,
   uid: "1234",
   kind: {
@@ -66,7 +66,7 @@ let multiContainerPod: Request<a.Pod> = {
   namespace: "default",
 };
 
-let singleContainerPod: Request<a.Pod> = {
+const singleContainerPod: Request<a.Pod> = {
   operation: operation,
   uid: "1234",
   kind: {
@@ -96,7 +96,8 @@ let singleContainerPod: Request<a.Pod> = {
   namespace: "default",
 };
 
-let noLabels: Request<a.Pod> = {
+/*
+const noLabels: Request<a.Pod> = {
   operation: operation,
   uid: "1234",
   kind: {
@@ -117,7 +118,7 @@ let noLabels: Request<a.Pod> = {
   namespace: "default",
 };
 
-let withLabels: Request<a.Pod> = {
+const withLabels: Request<a.Pod> = {
   operation: operation,
   uid: "1234",
   kind: {
@@ -143,9 +144,10 @@ let withLabels: Request<a.Pod> = {
   name: "test",
   namespace: "default",
 };
-let withoutIgnoreLabelsPod = new PeprRequest<a.Pod>(noLabels);
+*/
+//const withoutIgnoreLabelsPod = new PeprMutateRequest<a.Pod>(noLabels);
 
-let ignoreLabelsPod = new PeprRequest<a.Pod>(withLabels);
+//const ignoreLabelsPod = new PeprMutateRequest<a.Pod>(withLabels);
 
 describe("InitSecretsReady function", () => {
   test("returns false when secrets are not initialized", () => {
@@ -153,7 +155,7 @@ describe("InitSecretsReady function", () => {
   });
 
   // Populates secrets
-  let secrets: IInitSecret = {
+  const secrets: IInitSecret = {
     privateRegistrySecret: {
       auths: {},
     },
@@ -219,7 +221,7 @@ describe("checkPattern", () => {
 });
 
 describe("ParseAnyReference", () => {
-  let imageRefs = [
+  const imageRefs = [
     "nginx",
     "nginx:1.23.3",
     "defenseunicorns/zarf-agent:v0.22.1",
@@ -278,14 +280,14 @@ describe("ParseAnyReference", () => {
 });
 
 describe("GetCRCHash", () => {
-  let inputs = [
+  const inputs = [
     "docker.io/library/nginx",
     "docker.io/library/nginx",
     "docker.io/defenseunicorns/zarf-agent",
     "ghcr.io/stefanprodan/podinfo",
     "registry1.dso.mil/ironbank/opensource/defenseunicorns/zarf/zarf-agent",
   ];
-  let expectedOutputs = [
+  const expectedOutputs = [
     "3793515731",
     "3793515731",
     "4283503412",
@@ -302,7 +304,7 @@ describe("GetCRCHash", () => {
 });
 
 describe("ImageTransformHost", () => {
-  let imageRefs = [
+  const imageRefs = [
     "nginx",
     "nginx:1.23.3",
     "defenseunicorns/zarf-agent:v0.22.1",
@@ -328,7 +330,7 @@ describe("ImageTransformHost", () => {
   ];
 
   test("transforms valid image references correctly", () => {
-    const transformedRefs = imageRefs.map((ref, idx) => {
+    const transformedRefs = imageRefs.map(ref => {
       return ImageTransformHost("gitlab.com/project", ref);
     });
 
@@ -349,7 +351,7 @@ describe("ImageTransformHost", () => {
 });
 
 describe("ImageTransformHostWithoutChecksum", () => {
-  let imageRefs = [
+  const imageRefs = [
     "nginx",
     "nginx:1.23.3",
     "defenseunicorns/zarf-agent:v0.22.1",
@@ -374,7 +376,7 @@ describe("ImageTransformHostWithoutChecksum", () => {
   ];
 
   test("transforms valid image references correctly", () => {
-    const transformedRefs = imageRefs.map((ref, idx) => {
+    const transformedRefs = imageRefs.map(ref => {
       return ImageTransformHostWithoutChecksum("gitlab.com/project", ref);
     });
 
@@ -396,24 +398,24 @@ describe("ImageTransformHostWithoutChecksum", () => {
 
 describe("UpdateContainerImages", () => {
   // pods
-  let mutliContainer = new PeprRequest<a.Pod>(multiContainerPod);
-  let singleContainer = new PeprRequest<a.Pod>(singleContainerPod);
+  const mutliContainer = new PeprMutateRequest<a.Pod>(multiContainerPod);
+  const singleContainer = new PeprMutateRequest<a.Pod>(singleContainerPod);
 
   // expected image
-  let expectedImage = "127.0.0.1:31999/library/nginx:latest-zarf-3793515731";
+  const expectedImage = "127.0.0.1:31999/library/nginx:latest-zarf-3793515731";
 
   // internalRegistryAddress
-  let address = "127.0.0.1:31999";
+  const address = "127.0.0.1:31999";
 
   test("updates container images correctly on pods with init and ephemeral containers", () => {
     UpdateContainerImages(mutliContainer, address);
 
     expect(mutliContainer.Raw?.spec?.containers?.[0].image).toBe(expectedImage);
     expect(mutliContainer.Raw?.spec?.initContainers?.[0].image).toBe(
-      expectedImage
+      expectedImage,
     );
     expect(mutliContainer.Raw?.spec?.ephemeralContainers?.[0].image).toBe(
-      expectedImage
+      expectedImage,
     );
   });
 
@@ -421,7 +423,7 @@ describe("UpdateContainerImages", () => {
     UpdateContainerImages(singleContainer, address);
 
     expect(singleContainer.Raw?.spec?.containers?.[0].image).toBe(
-      expectedImage
+      expectedImage,
     );
     expect(singleContainer.Raw?.spec?.initContainers).toBe(undefined);
     expect(singleContainer.Raw?.spec?.ephemeralContainers).toBe(undefined);

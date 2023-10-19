@@ -59,16 +59,16 @@ export interface IImageTransformClient {
     request: image_pb.TransformRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   imageTransformHost(
     request: image_pb.TransformRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   imageTransformHost(
     request: image_pb.TransformRequest,
@@ -76,23 +76,23 @@ export interface IImageTransformClient {
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   imageTransformHostWithoutChecksum(
     request: image_pb.TransformRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   imageTransformHostWithoutChecksum(
     request: image_pb.TransformRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   imageTransformHostWithoutChecksum(
     request: image_pb.TransformRequest,
@@ -100,8 +100,8 @@ export interface IImageTransformClient {
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
 }
 
@@ -112,22 +112,22 @@ export class ImageTransformClient
   constructor(
     address: string,
     credentials: grpc.ChannelCredentials,
-    options?: Partial<grpc.ClientOptions>
+    options?: Partial<grpc.ClientOptions>,
   );
   public imageTransformHost(
     request: image_pb.TransformRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   public imageTransformHost(
     request: image_pb.TransformRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   public imageTransformHost(
     request: image_pb.TransformRequest,
@@ -135,23 +135,23 @@ export class ImageTransformClient
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   public imageTransformHostWithoutChecksum(
     request: image_pb.TransformRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   public imageTransformHostWithoutChecksum(
     request: image_pb.TransformRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
   public imageTransformHostWithoutChecksum(
     request: image_pb.TransformRequest,
@@ -159,7 +159,7 @@ export class ImageTransformClient
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: image_pb.TransformResponse
-    ) => void
+      response: image_pb.TransformResponse,
+    ) => void,
   ): grpc.ClientUnaryCall;
 }

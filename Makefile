@@ -1,7 +1,7 @@
 # Makefile for building the Pepr Zarf Agent and the Transformer Service
 
 SHELL=bash
-DOCKER_USERNAME=cmwylie19
+DOCKER_USERNAME=bdw617
 TAG=0.0.1
 
 include transformer/Makefile
@@ -35,7 +35,7 @@ deploy/dev:
 .PHONY: check/server
 check/server:
 	@echo "Checking Server"
-	@kubectl run debugger --image=cmwylie19/grpcurl-debugger:0.0.1
+	@kubectl run debugger --image=$(DOCKER_USERNAME)/grpcurl-debugger:0.0.1
 	@echo "Waiting for server to be ready"
 	@kubectl wait --for=condition=Ready Pod debugger --timeout=60s
 	@echo "List gRPC Services"

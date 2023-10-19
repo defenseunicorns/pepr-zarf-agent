@@ -38,7 +38,7 @@ export class InitSecrets {
     const secretData = await this.k8sApi.getSecretValues(
       this.zarfStateSecretName,
       this.zarfStateSecretNamespace,
-      this.zarfStateSecretKeys
+      this.zarfStateSecretKeys,
     );
 
     const zarfState: ZarfState = JSON.parse(secretData.state);
@@ -52,7 +52,7 @@ export class InitSecrets {
     const secretData = await this.k8sApi.getSecretValues(
       this.privateRegistrySecretName,
       this.privateRegistrySecretNamespace,
-      this.privateRegistrySecretKeys
+      this.privateRegistrySecretKeys,
     );
     const authData: AuthData = JSON.parse(secretData[".dockerconfigjson"]);
     this.privateRegistrySecret = authData;
@@ -64,19 +64,19 @@ export class InitSecrets {
   async createOrUpdateSecret(
     name: string,
     namespace: string,
-    secretData: Record<string, string>
+    secretData: Record<string, string>,
   ): Promise<void> {
     await this.k8sApi.createOrUpdateSecret(name, namespace, secretData);
   }
 
   async patchPodImagePullSecret(
     name: string,
-    namespace: string
+    namespace: string,
   ): Promise<void> {
     await this.k8sApi.addImagePullSecretToPod(
       name,
       namespace,
-      this.privateRegistrySecretName
+      this.privateRegistrySecretName,
     );
     return;
   }

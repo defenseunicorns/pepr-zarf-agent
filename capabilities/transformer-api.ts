@@ -11,13 +11,13 @@ export class TransformerAPI {
   constructor() {
     this.client = new ImageTransformClient(
       H0STNAME,
-      credentials.createInsecure()
+      credentials.createInsecure(),
     );
   }
 
   async transformAllContainers(
     pod: PeprRequest<a.Pod>,
-    address: string
+    address: string,
   ): Promise<void> {
     if (pod.Raw?.spec?.initContainers !== undefined) {
       await Promise.all(
@@ -25,12 +25,12 @@ export class TransformerAPI {
           try {
             container.image = await this.imageTransformHost(
               address,
-              container.image
+              container.image,
             );
           } catch (err) {
             Log.error("Error calling imageTransformHost", err.toString());
           }
-        })
+        }),
       );
     }
 
@@ -40,12 +40,12 @@ export class TransformerAPI {
           try {
             container.image = await this.imageTransformHost(
               address,
-              container.image
+              container.image,
             );
           } catch (err) {
             Log.error("Error calling imageTransformHost", err.toString());
           }
-        })
+        }),
       );
     }
 
@@ -54,22 +54,22 @@ export class TransformerAPI {
         try {
           container.image = await this.imageTransformHost(
             address,
-            container.image
+            container.image,
           );
           Log.info(
             "Transformed image: " +
-              JSON.stringify(pod.Raw.spec.containers, undefined, 2)
+              JSON.stringify(pod.Raw.spec.containers, undefined, 2),
           );
         } catch (err) {
           Log.error("Error calling imageTransformHost", err.toString());
         }
-      })
+      }),
     );
   }
 
   async imageTransformHost(
     targetHost: string,
-    srcReference: string
+    srcReference: string,
   ): Promise<string> {
     const request = new TransformRequest();
     request.setTargethost(targetHost);
@@ -90,7 +90,7 @@ export class TransformerAPI {
 
   async imageTransformHostWithoutChecksum(
     targetHost: string,
-    srcReference: string
+    srcReference: string,
   ): Promise<string> {
     const request = new TransformRequest();
     request.setTargethost(targetHost);
@@ -103,13 +103,13 @@ export class TransformerAPI {
           if (err) {
             Log.error(
               "Error calling imageTransformHostWithoutChecksum",
-              err.toString()
+              err.toString(),
             );
             reject(err);
           } else {
             resolve(response.getTransformedimage());
           }
-        }
+        },
       );
     });
   }

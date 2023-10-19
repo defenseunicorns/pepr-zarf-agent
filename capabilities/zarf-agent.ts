@@ -19,8 +19,11 @@ const { When } = ZarfAgent;
  * ---------------------------------------------------------------------------------------------------
  * Initialize InitSecrets & TransformerAPI
  */
-let _initSecrets = new InitSecrets(new K8sAPI());
-let _transformer = new TransformerAPI();
+const _initSecrets = new InitSecrets(new K8sAPI());
+const _transformer = new TransformerAPI();
+
+// turn up log level to DEBUG
+process.env.LOG_LEVEL = "DEBUG";
 
 /**
  * ---------------------------------------------------------------------------------------------------
@@ -33,33 +36,32 @@ let _transformer = new TransformerAPI();
  */
 When(a.ConfigMap)
   .IsCreated()
-  .Then(() => {
+  .Mutate(() => {
     try {
       Log.info(
         "Private Registry Secret",
         JSON.stringify(
           _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
           undefined,
-          2
-        )
+          2,
+        ),
       );
       Log.info(
         "Zarf State Secret",
-        JSON.stringify(_initSecrets.zarfStateSecretData["state"], undefined, 2)
+        JSON.stringify(_initSecrets.zarfStateSecretData["state"], undefined, 2),
       );
     } catch (err) {
       Log.error(
         "Could not fetch secrets because pod has not been created",
-        err
+        err,
       );
     }
   });
 
 When(a.Pod)
   .IsCreatedOrUpdated()
-  .Then(async pod => {
+  .Mutate(async pod => {
     // Turn up logging
-    Log.SetLogLevel("debug");
 
     // If InitSecrets do not exist, create them
     if (!InitSecretsReady(_initSecrets)) {
@@ -99,7 +101,7 @@ When(a.Pod)
         // transform all containers in pod
         await _transformer.transformAllContainers(
           pod,
-          _initSecrets.zarfStateSecret.registryInfo.address
+          _initSecrets.zarfStateSecret.registryInfo.address,
         );
 
         // add zarf-agent label to pod to be ignored next time
