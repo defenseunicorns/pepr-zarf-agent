@@ -1,7 +1,6 @@
 import { Capability, a, Log } from "pepr";
 import { K8sAPI } from "./kubernetes-api";
 import { InitSecrets } from "./secrets/initSecrets";
-import { InitSecretsReady } from "./helpers";
 import { TransformerAPI } from "./transformer-api";
 
 /**
@@ -17,70 +16,85 @@ export const ZarfAgent = new Capability({
 const { When } = ZarfAgent;
 
 /**
- * ---------------------------------------------------------------------------------------------------
  * Initialize InitSecrets & TransformerAPI
  */
 const _initSecrets = new InitSecrets(new K8sAPI());
 const _transformer = new TransformerAPI();
-// Initialize TransformerAPI
-(async ()=>{
-  await _transformer.run();
+
+/**
+ * Initialize TransformerAPI & fetch Secrets
+ */
+(async () => {
+  Log.SetLogLevel("debug");
+
+  try {
+    await Promise.all([_initSecrets.getZarfStateSecret(), _initSecrets.getZarfPrivateRegistrySecret(), _transformer.run()]);
+    Log.info("Initialized TransformerAPI and fetched Secrets")
+  } catch (error) {
+    Log.error('Could not initialize TransformerAPI and fetch Secrets:', error);
+  }
 })()
 
 
 /**
  * ---------------------------------------------------------------------------------------------------
- *                                   CAPABILITY ACTION (Pod)                                   *
+ *                                   CAPABILITY ACTION (Zarf-Agent)                                   *
  * ---------------------------------------------------------------------------------------------------
  *
- * This Capability Action fetches the `zarf-state` and `private-registry` secrets when
- * a pod is created, saves them to state, and deploys the `private-registry` secret to the
- * pod namespace.
+ * This Capability Action fetches the `zarf-state` and `private-registry` secrets. It transformed
+ * pods and Argo Apps to meet internal requirements for working with Zarf.
  */
-When(a.ConfigMap)
-  .IsCreated()
-  .Then(() => {
+
+When(a.GenericKind, {
+  group: "source.toolkit.fluxcd.io",
+  version: "v1beta2",
+  kind: "GitRepository",
+  plural: "gitrepositories",
+})
+  .IsCreatedOrUpdated()
+  .Then(gitRepo => {
+    delete gitRepo.Raw?.finalizers
     try {
-      Log.info(
-        "Private Registry Secret",
-        JSON.stringify(
-          _initSecrets.privateRegistrySecretData[".dockerconfigjson"],
-          undefined,
-          2
+      gitRepo.Raw = JSON.parse(
+        _transformer.transformFluxApp(
+          gitRepo.Raw,
+          gitRepo.Request,
+          _initSecrets.zarfStateSecret.gitServer.address,
+          _initSecrets.zarfStateSecret.gitServer.pushUsername
         )
-      );
-      Log.info(
-        "Zarf State Secret",
-        JSON.stringify(_initSecrets.zarfStateSecretData["state"], undefined, 2)
-      );
+      )
+      console.log(JSON.stringify(gitRepo.Raw,undefined,2))
     } catch (err) {
-      Log.error(
-        "Could not fetch secrets because pod has not been created",
-        err
-      );
+      Log.error("Error transforming gitRepo", err)
     }
-  });
+  })
+
+When(a.GenericKind, {
+  group: "argoproj.io",
+  version: "v1alpha1",
+  kind: "Application",
+})
+  .IsCreatedOrUpdated()
+  .Then(app => {
+    delete app.Raw?.finalizers
+    try {
+      app.Raw = JSON.parse(
+        _transformer.transformArgoApp(
+          app.Raw,
+          app.Request,
+          _initSecrets.zarfStateSecret.gitServer.address,
+          _initSecrets.zarfStateSecret.gitServer.pushUsername
+        )
+      )
+    } catch (err) {
+      Log.error("Error transforming app", err)
+    }
+  })
 
 When(a.Pod)
   .IsCreatedOrUpdated()
   .Then(async pod => {
-    // Turn up logging
-    Log.SetLogLevel("debug");
-
-    // If InitSecrets do not exist, create them
-    if (!InitSecretsReady(_initSecrets)) {
-      try {
-        await _initSecrets.getZarfStateSecret();
-        await _initSecrets.getZarfPrivateRegistrySecret();
-
-        Log.info(`InitSecrets initialized. 💯`);
-      } catch (err) {
-        Log.error("Secrets in zarf namespace do not exist", err);
-        return;
-      }
-    }
     try {
-      // Parse output of transformPod to replace pod.Raw
       pod.Raw = JSON.parse(
         _transformer.transformPod(
           pod.Raw,
@@ -92,5 +106,33 @@ When(a.Pod)
     } catch (err) {
       Log.error("Error transforming pod", err);
     }
-    console.log("pod", JSON.stringify(pod, undefined, 2));
   });
+
+When(a.Secret)
+  .IsCreatedOrUpdated()
+  .InNamespace("argocd")
+  .WithLabel("argocd.argoproj.io/secret-type", "repository")
+  .Then(secret => {
+    secret.Raw = JSON.parse(
+      _transformer.transformArgoSecret(
+        secret.Raw,
+        secret.Request,
+        _initSecrets.zarfStateSecret.gitServer.address,
+        _initSecrets.zarfStateSecret.gitServer.pushUsername,
+        _initSecrets.zarfStateSecret.gitServer.pullPassword,
+        _initSecrets.zarfStateSecret.gitServer.pullUsername
+      )
+    )
+  })
+
+  When(a.Secret)
+  .IsCreatedOrUpdated()
+  .InNamespace("zarf")
+  .WithName("private-registry")
+  .Then(secret => _initSecrets.privateRegistrySecret = JSON.parse(secret.Raw.data['.dockerconfig.json']))
+
+  When(a.Secret)
+  .IsCreatedOrUpdated()
+  .InNamespace("zarf")
+  .WithName("zarf-state")
+  .Then(secret => _initSecrets.zarfStateSecret = JSON.parse(secret.Raw?.data?.state))

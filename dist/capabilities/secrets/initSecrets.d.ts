@@ -13,10 +13,7 @@ export declare class InitSecrets {
     zarfStateSecret: ZarfState;
     privateRegistrySecret: AuthData;
     constructor(k8sApi: K8sAPI);
-    private decodeBase64;
     getZarfStateSecret(): Promise<ZarfState>;
     getZarfPrivateRegistrySecret(): Promise<AuthData>;
-    createOrUpdateSecret(name: string, namespace: string, secretData: Record<string, string>): Promise<void>;
-    patchPodImagePullSecret(name: string, namespace: string): Promise<void>;
 }
 //# sourceMappingURL=initSecrets.d.ts.map
