@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.8.17",
-    "pepr": "0.7.0",
+    "pepr": "0.14.1",
     "ts-proto": "^1.156.1"
   },
   "devDependencies": {
