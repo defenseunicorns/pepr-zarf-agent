@@ -1,2 +1,7 @@
 *.key
 *.crt
+node_modules
+dist
+insecure*
+capabilities/hello-pepr*
+zarf-package*

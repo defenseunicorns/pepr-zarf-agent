@@ -1,7 +1,5 @@
 import { V1ObjectMeta } from "@kubernetes/client-node";
 
-
-
 // Image represents a config for an OCI image.
 export interface Image {
   Host: string;
@@ -290,4 +288,3 @@ export interface GroupVersionResource {
   readonly version: string;
   readonly resource: string;
 }
-

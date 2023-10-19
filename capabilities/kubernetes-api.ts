@@ -1,8 +1,4 @@
-import {
-  AppsV1Api,
-  CoreV1Api,
-  KubeConfig,
-} from "@kubernetes/client-node";
+import { AppsV1Api, CoreV1Api, KubeConfig } from "@kubernetes/client-node";
 
 export class K8sAPI {
   k8sApi: CoreV1Api;
@@ -18,18 +14,18 @@ export class K8sAPI {
   async getSecretValues(
     name: string,
     namespace: string,
-    keys: string[]
+    keys: string[],
   ): Promise<{ [key: string]: string }> {
     const response = await this.k8sApi.readNamespacedSecret(name, namespace);
     const secret = response.body.data;
     const secretValues: { [key: string]: string } = {};
 
     if (secret) {
-      keys.forEach(key => {
+      keys.forEach((key) => {
         if (secret[key]) {
           // Decode the base64 encoded secret value
           const decodedValue = Buffer.from(secret[key], "base64").toString(
-            "utf-8"
+            "utf-8",
           );
           secretValues[key] = decodedValue;
         } else {
